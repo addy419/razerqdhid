@@ -1,0 +1,5 @@
+hidapi*
+hid.py
+
+.py[c]
+__pycache__
