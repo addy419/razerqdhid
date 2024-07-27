@@ -173,33 +173,14 @@ class Report(ctypes.Structure):
         return new_report
 
 
-class RemapArgument(ctypes.Structure):
+class ButtonFunction(ctypes.Structure):
     _pack_ = 1
     _fields_ = [
-        ("_profile", ctypes.c_uint8),
-        ("_button", ctypes.c_uint8),
-        ("_hypershift", ctypes.c_uint8),
         ("_fn_class", ctypes.c_uint8),
         ("fn_value_length", ctypes.c_uint8),
         ("fn_value", ctypes.c_uint8 * 5),
     ]
-    profile = EnumProperty('_profile', Profile)
-    button = EnumProperty('_button', Button)
-    hypershift = EnumProperty('_hypershift', Hypershift)
     fn_class = EnumProperty('_fn_class', FnClass)
-    
-    @classmethod
-    def new(cls, button, hypershift, *, profile=Profile.CURRENT):
-        n = cls(
-            profile=profile,
-            button=button,
-            hypershift=hypershift,
-        )
-        return n
-    
-    @classmethod
-    def new_disable(cls, profile, button, hypershift):
-        return cls.new(profile, button, hypershift).set_disable()
     
     def set_fn_value(self, b):
         self.fn_value_length = len(b)
@@ -210,6 +191,7 @@ class RemapArgument(ctypes.Structure):
 
     def set_disable(self):
         self.fn_class = FnClass.DISABLED
+        self.set_fn_value(b'')
         return self
     
     def set_mouse(self, fn, *, turbo=None, double_click=False):

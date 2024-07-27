@@ -43,9 +43,9 @@ class BasiliskV3WiredDevice(Device):
         data = data[1:] # remove report id
         return pt.Report.from_buffer(bytearray(data))
     
-    def send_recv(self, report, *, wait_power=8):
+    def send_recv(self, report, *, wait_power=0):
         self.send(report)
-        for i in range(wait_power):
+        for i in range(4 + wait_power):
             sleep(0.01 * (2 ** i)) # each iteration wait longer
             rr = self.recv()
             if not (rr.command_class == report.command_class and bytes(rr.command_id) == bytes(report.command_id)):
@@ -62,9 +62,13 @@ class BasiliskV3WiredDevice(Device):
 if __name__ == '__main__':
     device = BasiliskV3WiredDevice()
     device.connect()
-    # r.arguments[6] = 0x10
-    # print(device.get_macro_info(29110).hex(' '))
-    # print(device.get_macro_info(1362).hex(' '))
-    print(device.get_macro_function(1362))
-    # device.set_macro_function(1362, b'\x01\x04\x02\x04')
+    print(device.get_macro_list())
+    # f = device.get_macro_function(1362)
+    # device.delete_macro(1362)
+    # print(device.get_macro_list())
+    # device.set_macro_function(1362, bytes.fromhex('010402040104020401040204010402040104020401040204010402040104020401040204010402040104020401040204010402040104020401040204010402040104020401040204010402040104020401040204010402040104020401040204010402040104020401040204') * 2)
+    # import time
+    # time.sleep(1)
+    # print(device.get_macro_function(1362))
+    # print(device.get_flash_usage())
     
