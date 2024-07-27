@@ -45,8 +45,8 @@ class BasiliskV3WiredDevice(Device):
     
     def send_recv(self, report, *, wait_power=0):
         self.send(report)
-        for i in range(4 + wait_power):
-            sleep(0.01 * (2 ** i)) # each iteration wait longer
+        for i in range(15 * (wait_power + 1)):
+            sleep(0.01 * (i + 1)) # each iteration wait longer
             rr = self.recv()
             if not (rr.command_class == report.command_class and bytes(rr.command_id) == bytes(report.command_id)):
                 breakpoint()

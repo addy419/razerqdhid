@@ -84,7 +84,7 @@ class Device:
         return self.sr_with(0x068e, '>HIII')
     
     def wait_device_ready(self):
-        self.sr_with(0x0086, '>xxx', wait_power=4)
+        self.sr_with(0x0086, '>xxx', wait_power=1)
         self.sr_with(0x0086, '>xx')
         return True
     
@@ -107,17 +107,17 @@ class Device:
     
     def get_profile_info(self, profile):
         data = b''
-        size, chunk = self.sr_with(0x0588, '>BHH64s', profile.value, len(data))
+        size, chunk = self.sr_with(0x0588, '>BHH64s', profile.value, len(data), wait_power=1)
         while size - len(data) > 64:
             data += chunk
-            _, chunk = self.sr_with(0x0588, '>BHH64s', profile.value, len(data))
+            _, chunk = self.sr_with(0x0588, '>BHH64s', profile.value, len(data), wait_power=1)
         data += chunk[:size-len(data)]
         return data
     
     def set_profile_info(self, profile, data):
         size = len(data)
         while len(data) > 0:
-            self.sr_with(0x0508, f'>BHH{len(data[:64])}s', profile.value, size - len(data), size, data[:64])
+            self.sr_with(0x0508, f'>BHH{len(data[:64])}s', profile.value, size - len(data), size, data[:64], wait_power=1)
             data = data[64:]
     
     def get_macro_count(self):
@@ -134,17 +134,17 @@ class Device:
     
     def get_macro_info(self, macro_id):
         data = b''
-        size, chunk = self.sr_with(0x068c, '>HHH64s', macro_id, len(data))
+        size, chunk = self.sr_with(0x068c, '>HHH64s', macro_id, len(data), wait_power=1)
         while size - len(data) > 64:
             data += chunk
-            _, chunk = self.sr_with(0x068c, '>HHH64s', macro_id, len(data))
+            _, chunk = self.sr_with(0x068c, '>HHH64s', macro_id, len(data), wait_power=1)
         data += chunk[:size-len(data)]
         return data
 
     def set_macro_info(self, macro_id, data):
         size = len(data)
         while len(data) > 0:
-            self.sr_with(0x060c, f'>HHH{len(data[:64])}s', macro_id, size - len(data), size, data[:64])
+            self.sr_with(0x060c, f'>HHH{len(data[:64])}s', macro_id, size - len(data), size, data[:64], wait_power=1)
             data = data[64:]
     
     def delete_macro(self, macro_id):
@@ -160,7 +160,7 @@ class Device:
         size = self.get_macro_size(macro_id)
         data = b''
         while size - len(data) > 0:
-            chunk = self.sr_with(0x0689, '>HIB64s', macro_id, len(data), 64)[0]
+            chunk = self.sr_with(0x0689, '>HIB64s', macro_id, len(data), 64, wait_power=1)[0]
             data += chunk[:size-len(data)]
         return data
     
@@ -168,5 +168,5 @@ class Device:
         size = len(data)
         self.set_macro_size(macro_id, size)
         while len(data) > 0:
-            self.sr_with(0x0609, f'>HIB{len(data[:64])}s', macro_id, size - len(data), len(data[:64]), data[:64])
+            self.sr_with(0x0609, f'>HIB{len(data[:64])}s', macro_id, size - len(data), len(data[:64]), data[:64], wait_power=1)
             data = data[64:]
