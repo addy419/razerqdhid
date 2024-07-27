@@ -43,11 +43,14 @@ class BasiliskV3WiredDevice(Device):
         data = data[1:] # remove report id
         return pt.Report.from_buffer(bytearray(data))
     
-    def send_recv(self, report):
+    def send_recv(self, report, *, wait_power=8):
         self.send(report)
-        for i in range(4):
-            sleep(0.01 * (i + 1)) # each iteration wait longer
+        for i in range(wait_power):
+            sleep(0.01 * (2 ** i)) # each iteration wait longer
             rr = self.recv()
+            if not (rr.command_class == report.command_class and bytes(rr.command_id) == bytes(report.command_id)):
+                breakpoint()
+                raise pt.RazerException('command does not match, please close other programs using this device')
             if rr.status == pt.Status.OK:
                 return rr
             elif rr.status == pt.Status.BUSY:
@@ -59,27 +62,9 @@ class BasiliskV3WiredDevice(Device):
 if __name__ == '__main__':
     device = BasiliskV3WiredDevice()
     device.connect()
-    # print(device.get_serial())
-    # print(device.get_firmware_version())
-    # print(device.get_device_mode())
-    # print(device.set_device_mode(0, 0))
-    # print(device.set_scroll_smart_reel(False))
-    # r = pt.Report.new(0x02, 0x0c, 10)
-    # for i, b in enumerate(bytearray(bytes.fromhex('00 60 00 06 01 0600000000'))):
-    #     r.arguments[i] = b
-    # for kk in range(256):
-    #     sleep(0.5)
-        # r.arguments[5] = int(input('key: '), base=16)
-        # print(r)
-    # try:
-    #     print(device.send_recv(r))
-    # except Exception as e:
-    #     print(e)
-    # # else:
-    #     print('success')
-    # r = pt.RemapArgument.new(pt.Button.AIM, pt.Hypershift.OFF, profile=pt.Profile.CURRENT)
-    # r.set_keyboard(pt.FnKeyboardModifier.LEFT_ALT | pt.FnKeyboardModifier.RIGHT_CONTROL, 0x04, turbo=100)
-    # print(r.get_keyboard())
-    # device.set_remap_button(r)
-    # print(device.set_dpi_stages([(4000, 4000), (4100, 4100), (4200, 4200), (4300, 4300), (4400, 4400)], 1, profile=pt.Profile.DIRECT))
-    print(device.get_dpi_stages(profile=pt.Profile.DIRECT))
+    # r.arguments[6] = 0x10
+    # print(device.get_macro_info(29110).hex(' '))
+    # print(device.get_macro_info(1362).hex(' '))
+    print(device.get_macro_function(1362))
+    # device.set_macro_function(1362, b'\x01\x04\x02\x04')
+    

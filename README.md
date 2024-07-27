@@ -13,6 +13,9 @@
 ## 协议
 
 雷蛇的巴蛇v3鼠标：
+vid = 0x1532
+pid = 0x0099
+ifn = 3
 
 四个interfaces：
 
@@ -201,4 +204,58 @@ PACK(struct razer_report
 
 固件不知道是怎么运作的，有从固件升级器里面提取出的，但是很难分析，就不分析了
 
-ROG 不给固件升级程序，坏坏，奥创 Armory Crate 组成太复杂了，也不好分析，而且第一次升级的时候还忘记抓包了。所以 ROG Strix Scope II RX 没固件
+ROG 不给固件升级程序，坏坏，奥创 Armory Crate 组成太复杂了，也不好分析，而且第一次升级的时候还忘记抓包了。所以 ROG Strix Scope II RX 没固件（过时了，现在已经拿到固件升级了）
+
+命令 0680 068e，class 06 可能和宏有关系，因为 0608 和060c在写入宏的时候用了
+0680 068e 都是读取命令，0680读取两个字节，068e读取14个字节，068e命令写入profile以后有的地方变小，难道和存储空间有关？
+
+例如，读取结果：
+0064 00 0168 0000 0167 0000 0004 00
+猜测：0064: 100 存储空间可用百分比
+猜测：0168：总页面数 0167 空闲页面数 0004 用过的页面数？
+
+0502 是增加 profile
+0503 是删除 profile
+
+雷蛇发送命令的程序是 razer synapse service `C:\Program Files (x86)\Razer\Synapse3\Service\Razer Synapse Service.exe`
+
+发送命令的 DLL 可能是 `C:\ProgramData\Razer\Synapse3\Service\Bin\Devices\Mw`，里面有和 PID 对应的 DLL，还有产生的日志，所以命令的含义可以理解了
+日志里面有 Daria 文件夹和外层文件夹中 RSy3_ (可能是 Razer Synapse 3 之意) 开头的 dll 文件引用，估计是一起运作的。RSy3开头的是 .NET C++ 的，而 RzCtl 的是 MSVC C++ 的。
+
+macro我测试存了39个，估计还可以存更多
+
+借助日志输出的信息，命令：
+
+- 068e: storageinfo，0x0168为页数，每页256字节，依次为总页数，可用页数，回收页数
+  - 0064000168000000b10000006e00
+  - ????--tttt----aaaa----rrrr--
+- 0086  DeviceConfig_DeviceStatus，先用长度3，后面用长度2，并等待返回 OK 长度3的
+- 0b03: surfacecal sensor_state: 参数为 0004(01/00)，01代表启用校准，00禁用
+- 0b0b: surfacecal sensor_liftsetting
+  - 参数为 0004 aa bb：
+  - 1mm -> 0100 2mm -> 0101 3mm -> 0102
+  - land1lift2 -> 0200 , l1l3-> 0201, l2l3 -> 0202
+  - 0300 -> 使用 lift config 0400 -> 使用 lift to track 和 track to lift 02
+  - 0500 -> 自己校准的
+- 000e(2): set polling rate (profile)
+- 0087(4): get firmware version (01020000)
+- 058a(1): 可能是获取总的 profile 数量
+- 0580(1): 获取当前有的 profile 数量
+- 0581(3): 可能是profile有几个，然后哪个可用050102
+- 0588(69): 读取profile信息，profile序号，2字节地址，2字节总大小00fa，64字节内容
+- 0680(2): 获取 macro 数量
+- 068b(6): 获取 macro 的序号 xxxx yyyy zzzz zzzz：x是偏移量，y是总数量，然后有 x 个 z 是每个宏的id，每个两字节
+- 068c(70): 获取 macro 内容，前两个字节是 id，然后两个字节偏移量，返回两字节总大小00fa，64字节内容
+
+- 0f82(12): 读取 extended_matrix_effect_base
+- 0f80(50): 也是和 rgb 灯光有关
+- 0b05/0b85(10): lift configuration，0004xxx他雷蛇里面自带的好几个都一样是20 30 15 08 15 05 0F 0A (00 00 70 0D 08 00 00 00)，还有的是 30 20 0D 08 0D 05 0F 0F
+- 0b09(4): sensor state 校准的时候用的 0004 0000 开始 0004 0001 结束，产生 id=5 的 endpoint 2 的消息
+  - 结束的时候，产生050a02表示错误了，050a01表示正确了
+- 0b0c(7): lift to track
+- 0b0d(10): track to lift
+- 0603(2): 新建 macro,或修改 macro 参数为 macro id
+- 0608(6) : 应该是 设置 macro 内容长度 macroid 2字节 长度 4字节
+- 060a/068a(6) : reset_flash
+  - 写入 0000 0002 0000 读出 0000 0202 0000
+- 0609 set_macro_funciton: ID(2), start(4), length(1), data(length)
