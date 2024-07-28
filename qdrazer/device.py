@@ -1,6 +1,7 @@
 import ctypes
 import struct
 from enum import Enum
+from time import sleep
 
 from . import protocol as pt
 
@@ -20,13 +21,13 @@ class Device:
         Example:
             sr_with(0x0688, '>HI', 123) sets H to 123 and returns I
         '''
+        all_args = kwargs.pop('all', False)
         size = struct.calcsize(fmt)
         zero_unpack = struct.unpack(fmt, bytes(size))
-        entries = len(zero_unpack)
         r = pt.Report.new((full_command >> 8) & 0xff, full_command & 0xff, size)
         r.arguments[:size] = struct.pack(fmt, *args, *zero_unpack[len(args):])
         rr = self.send_recv(r, **kwargs)
-        return struct.unpack(fmt, bytes(rr.arguments[:size]))[len(args):]
+        return struct.unpack(fmt, bytes(rr.arguments[:size]))[0 if all_args else len(args):]
 
     def set_device_mode(self, mode, param=0):
         # 0: normal, 1: bootloader, 2: test, 3: driver
@@ -170,3 +171,41 @@ class Device:
         while len(data) > 0:
             self.sr_with(0x0609, f'>HIB{len(data[:64])}s', macro_id, size - len(data), len(data[:64]), data[:64], wait_power=1)
             data = data[64:]
+
+    def reset_flash(self):
+        self.sr_with(0x060a, '>6s', bytes.fromhex('0000 0002 0000'))
+        # I don't know exactly the meaning of args
+        i = 0
+        while self.sr_with(0x068a, '>6s', bytes.fromhex('0000 0002 0000'), all=True)[0] != bytes.fromhex('0000 0202 0000'):
+            sleep(0.5)
+            if i >= 20: raise pt.RazerException('resetting flash takes too long')
+            i += 1
+    
+    def set_sensor_state(self, use_calib):
+        self.sr_with(0x0b03, '>HB', 0x0004, int(use_calib))
+    def get_sensor_state(self):
+        return bool(self.sr_with(0x0b83, '>HB', 0x0004)[0])
+    
+    def set_sensor_calibration(self, use_calib):
+        self.sr_with(0x0b09, '>HH', 0x0004, int(use_calib))
+    
+    def set_sensor_lift(self, lift_config):
+        self.sr_with(0x0b0b, '>HH', 0x0004, lift_config.value)
+    def get_sensor_lift(self):
+        return pt.LiftConfig(self.sr_with(0x0b8b, '>HH', 0x0004)[0])
+    
+    def set_sensor_lift_config(self, data):
+        self.sr_with(0x0b05, '>H8s', 0x0004, data)
+    def get_sensor_lift_config(self, data):
+        return self.sr_with(0x0b85, '>H8s', 0x0004)[0]
+    
+    def set_sensor_lift_config_a(self, data):
+        self.sr_with(0x0b0c, '>H5s', 0x0004, data)
+    def get_sensor_lift_config_a(self, data):
+        return self.sr_with(0x0b8c, '>H5s', 0x0004)[0]
+    
+    def set_sensor_lift_config_b(self, data):
+        self.sr_with(0x0b0d, '>H8s', 0x0004, data)
+    def get_sensor_lift_config_b(self, data):
+        return self.sr_with(0x0b8d, '>H8s', 0x0004)[0]
+    

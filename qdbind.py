@@ -34,12 +34,10 @@ class BasiliskV3WiredDevice(Device):
     def send(self, report):
         report.calculate_crc()
         send_data = b'\x00' + bytes(report)
-        print('send:', send_data)
         self.hid_device.send_feature_report(send_data)
     
     def recv(self):
         data = self.hid_device.get_feature_report(0, 91)
-        print('recv:', data)
         data = data[1:] # remove report id
         return pt.Report.from_buffer(bytearray(data))
     
@@ -49,7 +47,6 @@ class BasiliskV3WiredDevice(Device):
             sleep(0.01 * (i + 1)) # each iteration wait longer
             rr = self.recv()
             if not (rr.command_class == report.command_class and bytes(rr.command_id) == bytes(report.command_id)):
-                breakpoint()
                 raise pt.RazerException('command does not match, please close other programs using this device')
             if rr.status == pt.Status.OK:
                 return rr
@@ -60,15 +57,32 @@ class BasiliskV3WiredDevice(Device):
         raise pt.RazerException('report timeout')
 
 if __name__ == '__main__':
+    original_sr_with = BasiliskV3WiredDevice.sr_with
+    def sr_with(self, *args, **kwargs):
+        print(f's: {hex(args[0])} {args[1:]}, {kwargs}')
+        r = original_sr_with(self, *args, **kwargs)
+        print(f'r: {r}')
+        return r
+    BasiliskV3WiredDevice.sr_with = sr_with
     device = BasiliskV3WiredDevice()
     device.connect()
-    print(device.get_macro_list())
-    # f = device.get_macro_function(1362)
-    # device.delete_macro(1362)
-    # print(device.get_macro_list())
-    # device.set_macro_function(1362, bytes.fromhex('010402040104020401040204010402040104020401040204010402040104020401040204010402040104020401040204010402040104020401040204010402040104020401040204010402040104020401040204010402040104020401040204010402040104020401040204') * 2)
-    # import time
-    # time.sleep(1)
-    # print(device.get_macro_function(1362))
-    # print(device.get_flash_usage())
-    
+    ml = device.get_macro_list()
+    print(ml)
+    mi = device.get_macro_info(ml[1])
+    print(mi)
+    # print(device.get_macro_function(ml[1]).hex(' '))
+    device.delete_macro(ml[1])
+    device.set_macro_function(ml[1], bytes.fromhex('0108 0208 00 010a 020a'))
+    device.set_macro_info(ml[1], mi)
+    device.set_button_function(
+        pt.ButtonFunction().set_macro(ml[1]), pt.Button.AIM
+    )
+    print(device.get_macro_function(ml[1]).hex(' '))
+    # bf = pt.ButtonFunction()
+    # bf._fn_class = 0x09e
+    # bf.set_fn_value(bytes.fromhex('04'))
+    # device.set_button_function(
+    #     bf,
+    #     pt.Button.MIDDLE_BACKWARD
+    # )
+    # print(device.get_button_function(pt.Button.MIDDLE_BACKWARD).get_system())

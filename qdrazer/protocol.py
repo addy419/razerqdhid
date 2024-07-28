@@ -75,11 +75,13 @@ class FnClass(Enum):
     MACRO_TOGGLE = 0x05
     DPI_SWITCH = 0x06
     PROFILE_SWITCH = 0x07
-    MEDIA = 0x0a
+    SYSTEM = 0x09
+    CONSUMER = 0x0a
     DOUBLE_CLICK = 0x0b
     HYPERSHIFT_TOGGLE = 0x0c
     KEYBOARD_TURBO = 0x0d
     MOUSE_TURBO = 0x0e
+    MACRO_SEQUENCE = 0x0f
     SCROLL_MODE_TOGGLE = 0x12
 
 class FnMouse(Enum):
@@ -109,6 +111,39 @@ class FnDpiSwitch(Enum):
     FIXED = 0x05
     NEXT_LOOP = 0x06
     PREV_LOOP = 0x07
+
+class FnSystem(Flag):
+    POWER_DOWN = 0x01
+    SLEEP = 0x02
+    WAKE_UP = 0x04
+
+class LiftConfig(Enum):
+    SYM_1 = 0x0100
+    SYM_2 = 0x0101
+    SYM_3 = 0x0102
+    ASYM_12 = 0x0200
+    ASYM_13 = 0x0201
+    ASYM_23 = 0x0202
+    CONFIG1 = 0x0300
+    CONFIG2 = 0x0400
+    CALIB = 0x0500
+
+class MacroOpType(Enum):
+    KEYBOARD_DOWN = 0x01
+    KEYBOARD_UP = 0x02
+    MOUSE_BUTTON = 0x08
+    MOUSE_WHEEL = 0x0a
+    DELAY_1 = 0x11
+    DELAY_2 = 0x12
+
+macro_op_length = {
+    MacroOpType.KEYBOARD_DOWN: 1,
+    MacroOpType.KEYBOARD_UP: 1,
+    MacroOpType.MOUSE_BUTTON: 1,
+    MacroOpType.MOUSE_WHEEL: 1,
+    MacroOpType.DELAY_1: 1,
+    MacroOpType.DELAY_2: 2,
+}
 
 class transaction_parts(ctypes.Structure):
     _pack_ = 1
@@ -182,6 +217,10 @@ class ButtonFunction(ctypes.Structure):
     ]
     fn_class = EnumProperty('_fn_class', FnClass)
     
+    def set_fn_class(self, fn_class):
+        self.fn_class = fn_class
+        return self
+    
     def set_fn_value(self, b):
         self.fn_value_length = len(b)
         self.fn_value[:len(b)] = b
@@ -237,7 +276,7 @@ class ButtonFunction(ctypes.Structure):
             return dict(modifier=modifier, key=key, turbo=turbo)
     
     def set_macro(self, macro_id, *, mode=FnClass.MACRO_FIXED, times=1):
-        if mode not in (FnClass.MACRO_FIXED, FnClass.MACRO_HOLD, FnClass.MACRO_TOGGLE):
+        if mode not in (FnClass.MACRO_FIXED, FnClass.MACRO_HOLD, FnClass.MACRO_TOGGLE, FnClass.MACRO_SEQUENCE):
             raise ValueError()
         self.fn_class = mode
         if mode == FnClass.MACRO_FIXED:
@@ -246,7 +285,7 @@ class ButtonFunction(ctypes.Structure):
             self.set_fn_value(struct.pack('>H', macro_id))
         return self
     def get_macro(self):
-        if self.fn_class not in (FnClass.MACRO_FIXED, FnClass.MACRO_HOLD, FnClass.MACRO_TOGGLE):
+        if self.fn_class not in (FnClass.MACRO_FIXED, FnClass.MACRO_HOLD, FnClass.MACRO_TOGGLE, FnClass.MACRO_SEQUENCE):
             raise ValueError()
         mode = self.fn_class
         if mode == FnClass.MACRO_FIXED:
@@ -282,13 +321,22 @@ class ButtonFunction(ctypes.Structure):
             raise ValueError()
         fn, = struct.unpack('>B', self.get_fn_value())
         return dict(fn=fn)
+
+    def set_system(self, fn):
+        self.fn_class = FnClass.SYSTEM
+        self.set_fn_value(struct.pack('>B', fn.value))
+    def get_system(self):
+        if self.fn_class != FnClass.SYSTEM:
+            raise ValueError()
+        fn, = struct.unpack('>B', self.get_fn_value())
+        return FnSystem(fn)
     
-    def set_media(self, fn):
-        self.fn_class = FnClass.MEDIA
+    def set_consumer(self, fn):
+        self.fn_class = FnClass.CONSUMER
         self.set_fn_value(struct.pack('>H', fn))
         return self
-    def get_media(self):
-        if self.fn_class != FnClass.MEDIA:
+    def get_consumer(self):
+        if self.fn_class != FnClass.CONSUMER:
             raise ValueError()
         fn, = struct.unpack('>H', self.get_fn_value())
         return dict(fn=fn)

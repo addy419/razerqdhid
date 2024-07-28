@@ -1,7 +1,7 @@
 
 # Razer Quick&Dirty HID
 
-更改 Razer Basilisk V3 (雷蛇巴蛇V3) 鼠标配置，使用抓包分析到的协议，没有借助雷蛇任何软件的代码。使用 Python 调用 [libusb/hidapi](https://github.com/libusb/hidapi) 通信，可跨平台使用。实现比较简单，主要是可以更改按键功能，其他开源软件没有实现。
+更改 Razer Basilisk V3 (雷蛇巴蛇V3) 鼠标配置，使用抓包分析到的协议，没有借助雷蛇任何软件的代码。使用 Python 调用 [libusb/hidapi](https://github.com/libusb/hidapi) 通信，可跨平台使用。实现比较简单，主要是可以更改按键功能，可以读取和修改宏（巨集），其他开源软件没有实现。
 
 借鉴了 [CalcProgrammer1/OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB) 和 [openrazer](https://github.com/openrazer/openrazer) 的函数名、命令数值等，但是完全没有使用那些代码。
 
@@ -33,7 +33,7 @@ ifn = 3
     - 16位 媒体键
     - 13个8位，空的
   - system control id=3
-    - 3位，表示power down, sleep, wake up
+    - 3位，表示power down, sleep, wake up(0x81~0x83)
     - 5位，空的
     - 14个8位，空的
   - 01 00 id=4
@@ -45,7 +45,7 @@ ifn = 3
   - 任意按键，6个8位
   - LED，output, 3位
   - output，5位空的
-- 3: 0x01 0xff00 vendor
+- 3: 0x01 0xff00 vendor endpoint4?
   - feature 90个8位 控制信息
 
 鼠标主动发出的信息：
@@ -153,11 +153,13 @@ PACK(struct razer_report
   - 05 切换触发宏
   - 06 dpi切换
   - 07 profile切换
+  - 09 (新发现) system control
   - 0a 媒体键
   - 0b 双击
   - 0c hypershift切换
   - 0d 键盘turbo
   - 0e 鼠标turbo
+  - 0f 序列macro(新发现的)
   - 12 滚动模式切换
   - 此外没有其他按键
 - 01 后续域的长度
@@ -192,6 +194,7 @@ PACK(struct razer_report
     - 长度01: 01 提高等级 02 降低等级 06 向上循环 07 向下循环
     - 长度05：05 意义不明，也许是表示固定 dpi，接下来四个字节，分别为XY dpi
   - 07 profile 切换 长度 01 值 04 值意义不明
+  - 09 (新发现) id=3的 system control，一个字节
   - 0a 媒体键 长度 02
     - 2个字节和 HID consumer control 的 usage code 相同
   - 0b 双击 长度 01 应该和鼠标的一致
@@ -259,3 +262,39 @@ macro我测试存了39个，估计还可以存更多
 - 060a/068a(6) : reset_flash
   - 写入 0000 0002 0000 读出 0000 0202 0000
 - 0609 set_macro_funciton: ID(2), start(4), length(1), data(length)
+
+宏的格式
+宏 info 信息可有可无，就是名字、序号等等。首先是16字节序号，然后4字节不知道是啥，然后是名称字符串，然后就不知道是啥了
+宏的 function：
+- 0104 按下A
+- 0204 松开A
+- 0105 0205 B
+- 1203e8 延时1s (1000ms)
+- 0106 0206 C
+- 1178 延时 0.12s (120ms)
+
+- 鼠标的是组合形式，每一位代表一个按键
+- 08 01 左键按下
+- 08 00 没有
+- 08 10 鼠标5按下
+- 应该是 左右中45
+- 滚动 0a 01 上 0a ff 下，左右滚动应该不能存进去，因为左右滚动它存的是没有
+
+序列 macro，按键绑定的类是 0x0f，每次执行两个操作，一个按下一个松开。
+
+其他宏的 function 可用的码：
+
+- 0301 电脑电源按钮(system control)，03开头的是 hid endpoint 02 的 id=03 的 report
+- 0401 和 0301 一样
+- 050101或060101 发送 020101，就是 consumer control
+
+- 01: 键盘按下
+- 02: 键盘松开
+- 03/04: system
+- 05/06: consumer
+- 07: -
+- 08: 鼠标
+- 09: -
+- 0a: 滚轮
+- 11: 延时1
+- 12: 延时2
