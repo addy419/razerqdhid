@@ -43,18 +43,19 @@ class BasiliskV3WiredDevice(Device):
     
     def send_recv(self, report, *, wait_power=0):
         self.send(report)
+        rr = report
         for i in range(15 * (wait_power + 1)):
             sleep(0.01 * (i + 1)) # each iteration wait longer
             rr = self.recv()
             if not (rr.command_class == report.command_class and bytes(rr.command_id) == bytes(report.command_id)):
-                raise pt.RazerException('command does not match, please close other programs using this device')
+                raise pt.RazerException('command does not match, please close other programs using this device', rr)
             if rr.status == pt.Status.OK:
                 return rr
             elif rr.status == pt.Status.BUSY:
                 continue
             else:
-                raise pt.RazerException('report execution failed')
-        raise pt.RazerException('report timeout')
+                raise pt.RazerException('report execution failed', rr)
+        raise pt.RazerException('report timeout', rr)
 
 if __name__ == '__main__':
     original_sr_with = BasiliskV3WiredDevice.sr_with
@@ -66,23 +67,4 @@ if __name__ == '__main__':
     BasiliskV3WiredDevice.sr_with = sr_with
     device = BasiliskV3WiredDevice()
     device.connect()
-    ml = device.get_macro_list()
-    print(ml)
-    mi = device.get_macro_info(ml[1])
-    print(mi)
-    # print(device.get_macro_function(ml[1]).hex(' '))
-    device.delete_macro(ml[1])
-    device.set_macro_function(ml[1], bytes.fromhex('0108 0208 00 010a 020a'))
-    device.set_macro_info(ml[1], mi)
-    device.set_button_function(
-        pt.ButtonFunction().set_macro(ml[1]), pt.Button.AIM
-    )
-    print(device.get_macro_function(ml[1]).hex(' '))
-    # bf = pt.ButtonFunction()
-    # bf._fn_class = 0x09e
-    # bf.set_fn_value(bytes.fromhex('04'))
-    # device.set_button_function(
-    #     bf,
-    #     pt.Button.MIDDLE_BACKWARD
-    # )
-    # print(device.get_button_function(pt.Button.MIDDLE_BACKWARD).get_system())
+    print(device.get_sensor_lift_config())
