@@ -31,7 +31,7 @@ class Status(Enum):
 
 class Profile(Enum):
     DIRECT = 0x00
-    CURRENT = 0x01
+    WHITE = DEFAULT = CURRENT = 0x01
     RED = 0x02
     GREEN = 0x03
     BLUE = 0x04
@@ -126,7 +126,8 @@ class LiftConfig(Enum):
     ASYM_23 = 0x0202
     CONFIG1 = 0x0300
     CONFIG2 = 0x0400
-    CALIB = 0x0500
+    CALIB1 = 0x0500
+    CALIB2 = 0x0600
 
 class MacroOpClass(Enum):
     KEYBOARD_DOWN = 0x01

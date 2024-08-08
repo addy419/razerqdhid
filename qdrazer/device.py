@@ -16,6 +16,15 @@ class Device:
     def send_recv(self, report, *, wait_power=0):
         raise NotImplementedError
     
+    def get_info_manufacturer(self):
+        raise NotImplementedError
+    
+    def get_info_product(self):
+        raise NotImplementedError
+    
+    def get_info_serial(self):
+        raise NotImplementedError
+    
     def sr_with(self, full_command, fmt, *args, **kwargs):
         '''
         Example:
@@ -196,16 +205,15 @@ class Device:
     
     def set_sensor_lift_config(self, data):
         self.sr_with(0x0b05, '>H8s', 0x0004, data)
-    def get_sensor_lift_config(self, data):
+    def get_sensor_lift_config(self):
         return self.sr_with(0x0b85, '>H8s', 0x0004)[0]
     
     def set_sensor_lift_config_a(self, data):
         self.sr_with(0x0b0c, '>H5s', 0x0004, data)
-    def get_sensor_lift_config_a(self, data):
+    def get_sensor_lift_config_a(self):
         return self.sr_with(0x0b8c, '>H5s', 0x0004)[0]
     
     def set_sensor_lift_config_b(self, data):
         self.sr_with(0x0b0d, '>H8s', 0x0004, data)
-    def get_sensor_lift_config_b(self, data):
+    def get_sensor_lift_config_b(self):
         return self.sr_with(0x0b8d, '>H8s', 0x0004)[0]
-    

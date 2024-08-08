@@ -22,6 +22,7 @@ class MyApp(App):
     
     def compose(self) -> ComposeResult:
         with ScrollableContainer():
+            yield MouseInfo().data_bind(device=self.device)
             yield SendRecv().data_bind(device=self.device)
 
 if __name__ == '__main__':

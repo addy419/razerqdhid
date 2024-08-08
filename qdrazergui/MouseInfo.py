@@ -12,13 +12,19 @@ class MouseInfo(Static):
     '''
     
     device = reactive(Device)
-    serial = reactive('')
-    
     
     def compose(self) -> ComposeResult:
-        yield Markdown(dedent('''
+        yield Markdown(dedent(f'''
             # Mouse info
-            
-            - info 1
-            - info 2
         '''))
+    
+    def watch_device(self, old_device: Device, new_device: Device) -> None:
+        try:
+            self.query_one(Markdown).update(dedent(f'''
+                # Mouse info
+                
+                - Device: {new_device.get_info_manufacturer()} {new_device.get_info_product()}
+                - Serial: {new_device.get_serial().decode('utf-8')}, FW Ver {'.'.join(str(x) for x in new_device.get_firmware_version())}
+            '''))
+        except NotImplementedError:
+            pass

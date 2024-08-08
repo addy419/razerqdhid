@@ -23,6 +23,15 @@ class BasiliskV3WiredDevice(Device):
     def close(self):
         self.hid_device.close()
     
+    def get_info_manufacturer(self):
+        return self.hid_device.manufacturer
+    
+    def get_info_product(self):
+        return self.hid_device.product
+    
+    def get_info_serial(self):
+        return self.hid_device.serial
+    
     def print_info(self):
         print(f"device manufacturer: {self.hid_device.manufacturer}")
         print(f"product: {self.hid_device.product}")
@@ -67,4 +76,4 @@ if __name__ == '__main__':
     BasiliskV3WiredDevice.sr_with = sr_with
     device = BasiliskV3WiredDevice()
     device.connect()
-    print(device.get_sensor_lift_config())
+    
