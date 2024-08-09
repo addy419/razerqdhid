@@ -53,6 +53,8 @@ class BasiliskV3WiredDevice(Device):
     def send_recv(self, report, *, wait_power=0):
         self.send(report)
         rr = report
+        if wait_power is None:
+            return rr
         for i in range(15 * (wait_power + 1)):
             sleep(0.01 * (i + 1)) # each iteration wait longer
             rr = self.recv()
@@ -63,7 +65,7 @@ class BasiliskV3WiredDevice(Device):
             elif rr.status == pt.Status.BUSY:
                 continue
             else:
-                raise pt.RazerException('report execution failed', rr)
+                raise pt.RazerException(f'report execution failed {rr.status}', rr)
         raise pt.RazerException('report timeout', rr)
 
 if __name__ == '__main__':
@@ -76,4 +78,11 @@ if __name__ == '__main__':
     BasiliskV3WiredDevice.sr_with = sr_with
     device = BasiliskV3WiredDevice()
     device.connect()
-    
+    device.set_led_effect(pt.LedRegion.ALL, pt.LedEffect.CUSTOM, 0)
+    device.set_led_brightness(pt.LedRegion.ALL, 0xff)
+    for p in range(11):
+        c = [(0, 0, 0)] * 11
+        c[p] = (0, 255, 0)
+        device.set_led_static(c)
+        sleep(0.3)
+    print(device.get_led_effect(pt.LedRegion.LOGO))

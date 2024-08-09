@@ -591,7 +591,6 @@ effect id:
 - 4: wave
   - 模式：0静止 1 俯视顺时针 红绿蓝 2 逆时针蓝绿红
   - 速度：0快一秒好几次 0x30 大概1.2s ff慢大概6s
-- 7: starlight
 - 8:  custom
 
 region id:
@@ -600,4 +599,7 @@ region id:
 - 4：logo
 - a: 底带的所有灯
 
+0f04: profile, region id, 00关闭 ff最亮
+
+0f03 的前两个字节我测试没有用，不知道是做什么用的，也不能保存，不是 profile。
 

@@ -51,41 +51,41 @@ class Device:
     def get_firmware_version(self):
         return self.sr_with(0x0081, '>4B')
 
-    def set_scroll_mode(self, mode: pt.ScrollMode, *, profile=pt.Profile.CURRENT):
+    def set_scroll_mode(self, mode: pt.ScrollMode, *, profile=pt.Profile.DEFAULT):
         self.sr_with(0x0214, '>BB', profile.value, mode.value)
-    def get_scroll_mode(self, *, profile=pt.Profile.CURRENT):
+    def get_scroll_mode(self, *, profile=pt.Profile.DEFAULT):
         mode = self.sr_with(0x0294, '>BB', profile.value)
         return pt.Profile(mode)
     
-    def set_scroll_acceleration(self, is_on: bool, *, profile=pt.Profile.CURRENT):
+    def set_scroll_acceleration(self, is_on: bool, *, profile=pt.Profile.DEFAULT):
         self.sr_with(0x0216, '>BB', profile.value, int(is_on))
-    def get_scroll_acceleration(self, *, profile=pt.Profile.CURRENT):
+    def get_scroll_acceleration(self, *, profile=pt.Profile.DEFAULT):
         return bool(self.sr_with(0x0296, '>BB', profile.value)[0])
     
-    def set_scroll_smart_reel(self, is_on: bool, *, profile=pt.Profile.CURRENT):
+    def set_scroll_smart_reel(self, is_on: bool, *, profile=pt.Profile.DEFAULT):
         self.sr_with(0x0217, '>BB', profile.value, int(is_on))
-    def get_scroll_smart_reel(self, *, profile=pt.Profile.CURRENT):
+    def get_scroll_smart_reel(self, *, profile=pt.Profile.DEFAULT):
         return bool(self.sr_with(0x0297, '>BB', profile.value)[0])
 
-    def set_button_function(self, fn, button, hypershift=pt.Hypershift.OFF, *, profile=pt.Profile.CURRENT):
+    def set_button_function(self, fn, button, hypershift=pt.Hypershift.OFF, *, profile=pt.Profile.DEFAULT):
         self.sr_with(0x020c, '>BBB7s', profile.value, button.value, hypershift.value, bytes(fn))
-    def get_button_function(self, button, hypershift=pt.Hypershift.OFF, *, profile=pt.Profile.CURRENT):
+    def get_button_function(self, button, hypershift=pt.Hypershift.OFF, *, profile=pt.Profile.DEFAULT):
         return pt.ButtonFunction.from_buffer_copy(self.sr_with(0x028c, '>BBB7s', profile.value, button.value, hypershift.value)[0])
 
-    def set_polling_rate(self, delay_ms, *, profile=pt.Profile.CURRENT):
+    def set_polling_rate(self, delay_ms, *, profile=pt.Profile.DEFAULT):
         self.sr_with(0x000e, '>BB', profile.value, delay_ms)
-    def get_polling_rate(self, *, profile=pt.Profile.CURRENT):
+    def get_polling_rate(self, *, profile=pt.Profile.DEFAULT):
         return self.sr_with(0x008e, '>BB', profile.value)[0]
     
-    def set_dpi_xy(self, dpi, *, profile=pt.Profile.CURRENT):
+    def set_dpi_xy(self, dpi, *, profile=pt.Profile.DEFAULT):
         self.sr_with(0x0405, '>BHHxx', profile.value, dpi[0], dpi[1])
-    def get_dpi_xy(self, *, profile=pt.Profile.CURRENT):
+    def get_dpi_xy(self, *, profile=pt.Profile.DEFAULT):
         return self.sr_with(0x0405, '>BHHxx', profile.value)
     
-    def set_dpi_stages(self, dpi_stages, active_stage, *, profile=pt.Profile.CURRENT):
+    def set_dpi_stages(self, dpi_stages, active_stage, *, profile=pt.Profile.DEFAULT):
         self.sr_with(0x0406, '>BBB35s', profile.value, active_stage, len(dpi_stages),
                      b''.join(struct.pack('>BHHxx', i, x, y) for i, (x, y) in enumerate(dpi_stages + [(0, 0)] * (5-len(dpi_stages)))))
-    def get_dpi_stages(self, *, profile=pt.Profile.CURRENT):
+    def get_dpi_stages(self, *, profile=pt.Profile.DEFAULT):
         active_stage, len_dpi_stages, dpi_stages = self.sr_with(0x0486, '>BBB35s', profile.value)
         dpi_stages = [struct.unpack('>BHHxx', bytes(x))[1:] for x in zip(*[iter(dpi_stages[:7*len_dpi_stages])] * 7)]
         return dpi_stages, active_stage
@@ -217,3 +217,24 @@ class Device:
         self.sr_with(0x0b0d, '>H8s', 0x0004, data)
     def get_sensor_lift_config_b(self):
         return self.sr_with(0x0b8d, '>H8s', 0x0004)[0]
+
+    def set_led_effect(self, region, effect, mode=0, speed=0, colors=None, *, profile=pt.Profile.DEFAULT):
+        colors = colors or []
+        color_bytes = b''.join(bytes(t) for t in colors)
+        self.sr_with(0x0f02, f'>BBBBBB{len(color_bytes)}s', profile.value, region.value, effect.value, mode, speed, len(colors), color_bytes)
+    def get_led_effect(self, region, *, profile=pt.Profile.DEFAULT):
+        effect, mode, speed, len_colors, color_bytes = self.sr_with(0x0f82, f'>BBBBBB6s', profile.value, region.value)
+        colors = [struct.unpack('>BBB', bytes(x)) for x in zip(*[iter(color_bytes[:len_colors*3])] * 3)]
+        return pt.LedEffect(effect), mode, speed, colors
+    
+    def set_led_static(self, colors):
+        '''
+        LED order: Logo, Wheel, Strip counter-clockwise
+        '''
+        self.sr_with(0x0f03, '>5s33s', bytes.fromhex('00000000 0a'), b''.join(bytes(t) for t in colors), wait_power=None)
+
+    def set_led_brightness(self, region, brightness, *, profile=pt.Profile.DEFAULT):
+        self.sr_with(0x0f04, '>BBB', profile.value, region.value, brightness)
+    
+    def get_led_brightness(self, region, *, profile=pt.Profile.DEFAULT):
+        return self.sr_with(0x0f84, '>BBB', profile.value, region.value)[0]

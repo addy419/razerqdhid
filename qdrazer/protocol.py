@@ -31,7 +31,7 @@ class Status(Enum):
 
 class Profile(Enum):
     DIRECT = 0x00
-    WHITE = DEFAULT = CURRENT = 0x01
+    WHITE = DEFAULT = 0x01
     RED = 0x02
     GREEN = 0x03
     BLUE = 0x04
@@ -147,6 +147,19 @@ class MacroOpMouseButton(Flag):
     MIDDLE = 0x04
     BACKWARD = 0x08
     FORWARD = 0x10
+
+class LedEffect(Enum):
+    OFF = DISABLED = 0x00
+    STATIC = 0x01
+    SPECTRUM = 0x03
+    WAVE = 0x04
+    CUSTOM = 0x08
+
+class LedRegion(Enum):
+    ALL = 0x00
+    WHEEL = 0x01
+    LOGO = 0x04
+    STRIP = 0x0a
 
 class transaction_parts(ctypes.Structure):
     _pack_ = 1
