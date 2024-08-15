@@ -107,7 +107,7 @@ class Device:
     def get_profile_list(self):
         length = self.get_profile_available_count()
         _, *l = self.sr_with(0x0581, f'>B{length}B')
-        return l
+        return [pt.Profile(p) for p in l]
     
     def new_profile(self, profile):
         self.sr_with(0x0502, '>B', profile.value)
@@ -195,8 +195,8 @@ class Device:
     def get_sensor_state(self):
         return bool(self.sr_with(0x0b83, '>HB', 0x0004)[0])
     
-    def set_sensor_calibration(self, use_calib):
-        self.sr_with(0x0b09, '>HH', 0x0004, int(use_calib))
+    def set_sensor_calibration(self, calib):
+        self.sr_with(0x0b09, '>HH', 0x0004, int(calib))
     
     def set_sensor_lift(self, lift_config):
         self.sr_with(0x0b0b, '>HH', 0x0004, lift_config.value)
