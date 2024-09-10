@@ -1,5 +1,20 @@
 <script setup lang="ts">
-
+import { inject } from 'vue';
+import type { Ref } from 'vue';
+const runPython = inject<Ref<Function | null>>('runPython');
+async function foo(){
+  if (!runPython?.value) {
+    return;
+  }
+  console.log(await runPython.value(`
+    import hid
+    hid.set_await_js(await_js)
+    from basilisk_v3.device import BasiliskV3Device
+    d = BasiliskV3Device()
+    d.connect()
+    print(d.get_serial())
+  `));
+}
 </script>
 
 <template>
