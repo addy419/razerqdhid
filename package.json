@@ -1,0 +1,28 @@
+{
+  "name": "razerqdhid",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "comlink": "^4.4.1",
+    "comsync": "^0.0.9",
+    "pinia": "^2.2.2",
+    "pyodide": "^0.26.2",
+    "sync-message": "^0.0.12",
+    "url": "^0.11.4",
+    "vue": "^3.4.37"
+  },
+  "devDependencies": {
+    "@gautemo/vite-plugin-service-worker": "^0.1.0",
+    "@types/w3c-web-hid": "^1.0.6",
+    "@vitejs/plugin-vue": "^5.1.2",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.1",
+    "vue-tsc": "^2.0.29"
+  }
+}

@@ -4,16 +4,23 @@ from qdrazer.device import Device
 import qdrazer.protocol as pt
 from time import sleep
 
-class BasiliskV3WiredDevice(Device):
+class BasiliskV3Device(Device):
     vid = 0x1532
     pid = 0x0099
     ifn = 3
     
-    def connect(self):
+    def connect(self, nth=1):
         self.path = None
+        ith = 0
         for it in hid.enumerate():
+            if it['usage_page'] == 12 and it.get('fio_count') == (0, 0, 0):
+                # workaround for webhid which cannot get ifn
+                it['interface_number'] = self.ifn
             if self.vid == it['vendor_id'] and self.pid == it['product_id'] and it['interface_number'] == self.ifn:
-                self.path = it['path']
+                ith += 1
+                if nth == ith:
+                    self.path = it['path']
+                    break
 
         if self.path is None:
             raise RuntimeError('No matching device')
@@ -69,14 +76,14 @@ class BasiliskV3WiredDevice(Device):
         raise pt.RazerException('report timeout', rr)
 
 if __name__ == '__main__':
-    original_sr_with = BasiliskV3WiredDevice.sr_with
+    original_sr_with = BasiliskV3Device.sr_with
     def sr_with(self, *args, **kwargs):
         print(f's: {hex(args[0])} {args[1:]}, {kwargs}')
         r = original_sr_with(self, *args, **kwargs)
         print(f'r: {r}')
         return r
-    BasiliskV3WiredDevice.sr_with = sr_with
-    device = BasiliskV3WiredDevice()
+    BasiliskV3Device.sr_with = sr_with
+    device = BasiliskV3Device()
     device.connect()
     device.set_led_effect(pt.LedRegion.ALL, pt.LedEffect.CUSTOM, 0)
     device.set_led_brightness(pt.LedRegion.ALL, 0xff)
