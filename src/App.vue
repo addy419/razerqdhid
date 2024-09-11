@@ -1,33 +1,51 @@
 <script setup lang="ts">
-import { inject } from 'vue';
-import type { Ref } from 'vue';
-const runPython = inject<Ref<Function | null>>('runPython');
-async function foo(){
-  if (!runPython?.value) {
-    return;
-  }
-  console.log(await runPython.value(`
-    import hid
-    hid.set_await_js(await_js)
-    from basilisk_v3.device import BasiliskV3Device
-    d = BasiliskV3Device()
-    d.connect()
-    print(d.get_serial())
-  `));
+import { ref } from 'vue';
+import ConnectDevice from './components/ConnectDevice.vue';
+import DeviceMain from './components/DeviceMain.vue';
+import LogConsole from './components/LogConsole.vue';
+
+const hasDevice = ref(false);
+
+const showConsole = ref(false);
+
+const logs = ref(['Here be logs']);
+var cl:Function, ce:Function, cw:Function;
+
+if(window.console && console.log){
+	cl = console.log;
+	console.log = function(){
+		logs.value.push([...arguments].map(x => x.toString()).join(', '));
+		cl.apply(this, arguments)
+	}
 }
+
+if(window.console && console.warn){
+	cw = console.warn;
+	console.warn = function(){
+		logs.value.push(['Warn', ...arguments].map(x => x.toString()).join(', '));
+		cw.apply(this, arguments)
+	}
+}
+
+if(window.console && console.error){
+	ce = console.error;
+	console.error = function(){
+	  logs.value.push(['Error', ...arguments].map(x => x.toString()).join(', '));
+		ce.apply(this, arguments)
+	}
+}
+
 </script>
 
 <template>
   <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-    <button @click="foo">request</button>
-    <button @click="enume">enum</button>
+    <ConnectDevice v-if="!hasDevice" @device-created="hasDevice = true" />
+    <DeviceMain v-else />
   </div>
+  <footer>
+    <button @click="showConsole = !showConsole">Console</button>
+    <LogConsole v-show="showConsole" :messages="logs" />
+  </footer>
 </template>
 
 <style scoped>
@@ -42,5 +60,12 @@ async function foo(){
 }
 .logo.vue:hover {
   filter: drop-shadow(0 0 2em #42b883aa);
+}
+footer {
+  position: fixed;
+  display: block;
+  bottom: 0;
+  padding: 1em 0;
+  width: 100%;
 }
 </style>

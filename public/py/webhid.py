@@ -1,13 +1,9 @@
-import ctypes
 import enum
-import asyncio
 
-from pyodide.code import run_js
-from pyodide.ffi import to_js
-
-__all__ = ['HIDException', 'DeviceInfo', 'Device', 'enumerate', 'BusType', 'set_await_js']
+__all__ = ['HIDException', 'Device', 'enumerate', 'BusType', 'set_await_js']
 
 def await_js(code):
+    print('await js is not set')
     raise NotImplementedError()
 
 def set_await_js(f):
@@ -82,7 +78,7 @@ class Device(object):
         report_id, data = data[0], data[1:]
         await_js(f'''
             const d = this.devices[{self.__dev}];
-            d.sendReport({report_id}, new Uint8Array([{', '.join(map(str, list(data)))}]));
+            await d.sendReport({report_id}, new Uint8Array([{', '.join(map(str, list(data)))}]));
         ''')
 
     def read(self, size, timeout=None):
@@ -95,7 +91,7 @@ class Device(object):
         report_id, data = data[0], data[1:]
         await_js(f'''
             const d = this.devices[{self.__dev}];
-            d.sendFeatureReport({report_id}, new Uint8Array([{', '.join(map(str, list(data)))}]));
+            await d.sendFeatureReport({report_id}, new Uint8Array([{', '.join(map(str, list(data)))}]));
         ''')
 
     def get_feature_report(self, report_id, size):
@@ -110,7 +106,6 @@ class Device(object):
         ''')
         b = bytes.fromhex(hex)
         # at least on windows, report id is at front
-        print(b)
         if b[0] == report_id:
             # guess it's really at front
             b = b[1:] + b'\x00'

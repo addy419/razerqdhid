@@ -55,9 +55,9 @@ if ("serviceWorker" in navigator) {
             const f = new AsyncFunction(`'use strict';${code}`);
             const p = f.apply(await_js_this);
             p.then((result: any) => {
-              client.writeMessage(result);
+              client.writeMessage([true, result]);
             }).catch((error: any) => {
-              throw error;
+              client.writeMessage([false, error.toString()]);
             });
           }
         };

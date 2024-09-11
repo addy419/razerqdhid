@@ -21,6 +21,7 @@
     "@gautemo/vite-plugin-service-worker": "^0.1.0",
     "@types/w3c-web-hid": "^1.0.6",
     "@vitejs/plugin-vue": "^5.1.2",
+    "sass": "^1.78.0",
     "typescript": "^5.5.3",
     "vite": "^5.4.1",
     "vue-tsc": "^2.0.29"

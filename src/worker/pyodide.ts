@@ -1,10 +1,11 @@
 import { loadPyodide, PyodideInterface } from 'pyodide';
+import type { PyDict } from 'pyodide/ffi';
 import * as Comlink from "comlink";
-import {syncExpose} from "comsync";
+import {syncExpose, SyncExtras} from "comsync";
 
 async function initPyodide() {
   let pyodide = await loadPyodide({
-    indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/',
+    indexURL: import.meta.env.BASE_URL + './pyodide',
   });
   const py_files = 'webhid.py qdrazer/device.py qdrazer/protocol.py basilisk_v3/device.py';
   await pyodide.runPythonAsync(`
@@ -39,6 +40,23 @@ async function initPyodide() {
 var pyodide: PyodideInterface | null = null;
 type NotifyCallback = (name: string, ...args: any[]) => any;
 
+var savedSyncExtras: SyncExtras | null = null;
+var savedNotifyCallback: NotifyCallback | null = null;
+
+function await_js(code: string) {
+  if (!savedSyncExtras || !savedNotifyCallback) {
+    throw new Error('no sync extras and notify callback');
+  }
+  savedNotifyCallback('await_js', code);
+  const [succeeded, result] = savedSyncExtras.readMessage();
+  if (!succeeded) {
+    throw new Error(result);
+  }
+  return result;
+}
+
+var pyGlobal: PyDict | null = null;
+
 Comlink.expose({
   init: async () => {
     pyodide = await initPyodide();
@@ -53,17 +71,18 @@ Comlink.expose({
     if (pyodide === null) {
       throw new Error('pyodide is not initialized');
     }
-    const await_js = (code: string) => {
-      notifyCallback('await_js', code);
-      const result = syncExtras.readMessage();
-      return result;
+    if (pyGlobal === null) {
+      pyGlobal = pyodide.toPy({});
     }
+    savedSyncExtras = syncExtras;
+    savedNotifyCallback = notifyCallback;
     options = options ?? {};
-    options.globals = options.globals ?? pyodide.toPy({});
+    options.globals = options.globals ?? pyGlobal;
     options.globals.set('syncExtras', syncExtras);
     options.globals.set('notifyCallback', notifyCallback);
     options.globals.set('await_js', await_js);
-    return pyodide.runPython(code, options);
+    const result = pyodide.runPython(code, options);
+    return result;
   }),
   runTest: syncExpose((syncExtras, notifyCallback) => {
     notifyCallback('world');
