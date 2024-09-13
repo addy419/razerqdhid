@@ -8,13 +8,16 @@ const hasDevice = ref(false);
 
 const showConsole = ref(false);
 
-const logs = ref(['Here be logs']);
+const logs = ref([[new Date(), 'Here be logs']]);
+function addLog(text: string) {
+  logs.value.push([new Date(), text]);
+}
 var cl:Function, ce:Function, cw:Function;
 
 if(window.console && console.log){
 	cl = console.log;
 	console.log = function(){
-		logs.value.push([...arguments].map(x => x.toString()).join(', '));
+		addLog([...arguments].map(x => x.toString()).join(', '));
 		cl.apply(this, arguments)
 	}
 }
@@ -22,7 +25,7 @@ if(window.console && console.log){
 if(window.console && console.warn){
 	cw = console.warn;
 	console.warn = function(){
-		logs.value.push(['Warn', ...arguments].map(x => x.toString()).join(', '));
+		addLog(['Warn', ...arguments].map(x => x.toString()).join(', '));
 		cw.apply(this, arguments)
 	}
 }
@@ -30,10 +33,17 @@ if(window.console && console.warn){
 if(window.console && console.error){
 	ce = console.error;
 	console.error = function(){
-	  logs.value.push(['Error', ...arguments].map(x => x.toString()).join(', '));
+	  addLog(['Error', ...arguments].map(x => x.toString()).join(', '));
 		ce.apply(this, arguments)
 	}
 }
+
+window.addEventListener("error", (event) => {
+  console.error(`${event.type}: ${event.message}`);
+});
+window.addEventListener("unhandledrejection", (event) => {
+  console.error(`${event.type}: ${event.reason}`);
+});
 
 </script>
 

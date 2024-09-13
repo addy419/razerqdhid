@@ -18,6 +18,7 @@ async function requestDevice(){
         print(f'r: {r}')
         return r
     BasiliskV3Device.sr_with = sr_with
+    import qdrazer.protocol as pt
     device = BasiliskV3Device()
     device.connect()
     print('device created', device.get_serial())

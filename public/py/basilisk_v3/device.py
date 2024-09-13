@@ -13,7 +13,7 @@ class BasiliskV3Device(Device):
         self.path = None
         ith = 0
         for it in hid.enumerate():
-            if it['usage_page'] == 12 and tuple(it.get('fio_count')) == (0, 0, 0):
+            if it['usage_page'] == 12 and tuple(it.get('fio_count') or ()) == (0, 0, 0):
                 # workaround for webhid which cannot get ifn
                 it['interface_number'] = self.ifn
             if self.vid == it['vendor_id'] and self.pid == it['product_id'] and it['interface_number'] == self.ifn:

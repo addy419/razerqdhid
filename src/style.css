@@ -41,12 +41,18 @@ button {
   transition: border-color 0.25s;
   color:rgb(255, 255, 255);
 }
+button.small {
+  padding: 0.25em 0.6em;
+}
 button:hover {
   border-color: #ffffff;
 }
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+button:disabled {
+  color: rgb(255, 255, 255, 0.4);
 }
 
 .card {
@@ -60,5 +66,5 @@ button:focus-visible {
 }
 
 td {
-  padding: 0 0.5em;
+  padding: 0.25em 1em;
 }

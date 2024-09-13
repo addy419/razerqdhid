@@ -54,8 +54,8 @@ class Device:
     def set_scroll_mode(self, mode: pt.ScrollMode, *, profile=pt.Profile.DEFAULT):
         self.sr_with(0x0214, '>BB', profile.value, mode.value)
     def get_scroll_mode(self, *, profile=pt.Profile.DEFAULT):
-        mode = self.sr_with(0x0294, '>BB', profile.value)
-        return pt.Profile(mode)
+        mode, = self.sr_with(0x0294, '>BB', profile.value)
+        return pt.ScrollMode(mode)
     
     def set_scroll_acceleration(self, is_on: bool, *, profile=pt.Profile.DEFAULT):
         self.sr_with(0x0216, '>BB', profile.value, int(is_on))
@@ -80,7 +80,7 @@ class Device:
     def set_dpi_xy(self, dpi, *, profile=pt.Profile.DEFAULT):
         self.sr_with(0x0405, '>BHHxx', profile.value, dpi[0], dpi[1])
     def get_dpi_xy(self, *, profile=pt.Profile.DEFAULT):
-        return self.sr_with(0x0405, '>BHHxx', profile.value)
+        return self.sr_with(0x0485, '>BHHxx', profile.value)
     
     def set_dpi_stages(self, dpi_stages, active_stage, *, profile=pt.Profile.DEFAULT):
         self.sr_with(0x0406, '>BBB35s', profile.value, active_stage, len(dpi_stages),
@@ -238,3 +238,107 @@ class Device:
     
     def get_led_brightness(self, region, *, profile=pt.Profile.DEFAULT):
         return self.sr_with(0x0f84, '>BBB', profile.value, region.value)[0]
+
+    def dump_profile(self, profile):
+        simple = [
+            'scroll_mode', 'scroll_acceleration', 'scroll_smart_reel',
+            'polling_rate', 'dpi_xy', 'dpi_stages'
+        ]
+        dump = {}
+        for name in simple:
+            ret = getattr(self, 'get_' + name)(profile=profile)
+            dump[name] = ret
+        
+        # button function
+        associated_macros = set()
+        button_function = {}
+        for hypershift in pt.Hypershift:
+            for button in pt.Button:
+                bf = button_function[button, hypershift] = self.get_button_function(button, hypershift, profile=profile)
+                if bf.get_subtype() == 'macro':
+                    associated_macros.add(bf.get_macro()['macro_id'])
+        dump['button_function'] = button_function
+        
+        # macros
+        macro = {}
+        for macro_id in associated_macros:
+            macro[macro_id] = self.dump_macro(macro_id)
+        dump['macro'] = macro
+        
+        # profile info
+        try:
+            dump['profile_info'] = self.get_profile_info(profile=profile)
+        except pt.RazerException:
+            pass
+        
+        # led effect
+        led_effect = {}
+        led_brightness = {}
+        for region in pt.LedRegion:
+            if region == pt.LedRegion.ALL:
+                continue
+            led_effect[region] = self.get_led_effect(region, profile=profile)
+            led_brightness[region] = self.get_led_brightness(region, profile=profile)
+        
+        return dump
+    
+    def load_profile(self, profile, dump):
+        if profile not in self.get_profile_list():
+            self.new_profile(profile)
+        simple = [
+            'scroll_mode', 'scroll_acceleration', 'scroll_smart_reel',
+            'polling_rate', 'dpi_xy', 'dpi_stages'
+        ]
+        for name in simple:
+            if dump[name]:
+                f = getattr(self, 'set_' + name)
+                try:
+                    f(dump[name], profile=profile)
+                except TypeError:
+                    if isinstance(dump[name], dict):
+                        f(**dump[name], profile=profile)
+                    else:
+                        f(*dump[name], profile=profile)
+        
+        # macros
+        if macro := dump.get('macro'):
+            for macro_id, macro_dump in macro.items():
+                self.load_macro(macro_id, macro_dump)
+        
+        # button function
+        if button_function := dump.get('button_function'):
+            for hypershift in pt.Hypershift:
+                for button in pt.Button:
+                    if fn := button_function.get((button, hypershift)):
+                        self.set_button_function(fn, button, hypershift, profile=profile)
+        
+        # profile info
+        if profile_info := dump.get('profile_info'):
+            self.set_profile_info(profile, profile_info)
+
+        # led effect
+        if led_effect := dump.get('led_effect'):
+            for region, effect in led_effect.items():
+                self.set_led_effect(region, *effect, profile=profile)
+        if led_brightness := dump.get('led_brightness'):
+            for region, brightness in led_brightness.items():
+                self.set_led_brightness(region, brightness, profile=profile)
+        
+        return dump
+    
+    def dump_macro(self, macro_id):
+        dump = {}
+        dump['macro_info'] = self.get_macro_info(macro_id)
+        dump['macro_function'] = self.get_macro_function(macro_id)
+        return dump
+
+    def load_macro(self, macro_id, dump):
+        try:
+            self.get_macro_size(macro_id)
+        except pt.RazerException:
+            self.set_macro_size(macro_id, len(dump.get('macro_function', b'')))
+        if (_ := dump.get('macro_info')):
+            self.set_macro_info(macro_id, _)
+        if (_ := dump.get('macro_function')):
+            self.set_macro_function(macro_id, _)
+    

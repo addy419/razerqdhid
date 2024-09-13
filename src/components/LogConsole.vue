@@ -2,7 +2,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 
 const props = defineProps<{
-  messages: string[]
+  messages: [Date, string][]
 }>();
 
 const consoleRef = ref<HTMLElement | null>(null);
@@ -30,7 +30,7 @@ onMounted(() => {
 
 <template>
   <ul class="console dark-bg" ref="consoleRef">
-    <li v-for="(msg, index) in messages" :key="index">{{ msg }}</li>
+    <li v-for="(item, index) in messages" :key="index">{{ item[0].toTimeString().split(' ')[0] }} {{ item[1] }}</li>
   </ul>
 </template>
 
