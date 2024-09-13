@@ -7,6 +7,7 @@ import LogConsole from './components/LogConsole.vue';
 const hasDevice = ref(false);
 
 const showConsole = ref(false);
+const logConsole = ref<InstanceType<typeof LogConsole> | null>(null);
 
 const logs = ref([[new Date(), 'Here be logs']]);
 function addLog(text: string) {
@@ -53,8 +54,8 @@ window.addEventListener("unhandledrejection", (event) => {
     <DeviceMain v-else />
   </div>
   <footer>
-    <button @click="showConsole = !showConsole">Console</button>
-    <LogConsole v-show="showConsole" :messages="logs" />
+    <button class="btn btn-sm" @click="showConsole = !showConsole; if(logConsole) {logConsole.scrollToBottom()}">Console</button>
+    <LogConsole v-show="showConsole" ref="logConsole" :messages="logs" />
   </footer>
 </template>
 

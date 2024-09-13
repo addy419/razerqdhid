@@ -13,26 +13,26 @@ function hasProfile(name: string) {
 </script>
 <template>
   <h1>Razer Basilisk V3 Tools</h1>
-  <div class="profile">
+  <div>
     Profile:
-    <button class="small" :class="{active: activeProfile === 'direct'}" :disabled="!hasProfile('direct')" @click="activeProfile = 'direct'">Direct</button>
-    <button class="small" :class="{active: activeProfile === 'white'}" :disabled="!hasProfile('white')" @click="activeProfile = 'white'">White</button>
-    <button class="small" :class="{active: activeProfile === 'red'}" :disabled="!hasProfile('red')" @click="activeProfile = 'red'">Red</button>
-    <button class="small" :class="{active: activeProfile === 'green'}" :disabled="!hasProfile('green')" @click="activeProfile = 'green'">Green</button>
-    <button class="small" :class="{active: activeProfile === 'blue'}" :disabled="!hasProfile('blue')" @click="activeProfile = 'blue'">Blue</button>
-    <button class="small" :class="{active: activeProfile === 'cyan'}" :disabled="!hasProfile('cyan')" @click="activeProfile = 'cyan'">Cyan</button>
+    <button class="btn btn-sm rounded-none" :class="{active: activeProfile === 'direct'}" :disabled="!hasProfile('direct')" @click="activeProfile = 'direct'">Direct</button>
+    <button class="btn btn-sm rounded-none" :class="{active: activeProfile === 'white'}" :disabled="!hasProfile('white')" @click="activeProfile = 'white'">White</button>
+    <button class="btn btn-sm rounded-none" :class="{active: activeProfile === 'red'}" :disabled="!hasProfile('red')" @click="activeProfile = 'red'">Red</button>
+    <button class="btn btn-sm rounded-none" :class="{active: activeProfile === 'green'}" :disabled="!hasProfile('green')" @click="activeProfile = 'green'">Green</button>
+    <button class="btn btn-sm rounded-none" :class="{active: activeProfile === 'blue'}" :disabled="!hasProfile('blue')" @click="activeProfile = 'blue'">Blue</button>
+    <button class="btn btn-sm rounded-none" :class="{active: activeProfile === 'cyan'}" :disabled="!hasProfile('cyan')" @click="activeProfile = 'cyan'">Cyan</button>
   </div>
-  <main>
-    <div class="menu">
-      <button :class="{active: activeTab === 'basic'}" @click="activeTab = 'basic'">Basic</button>
-      <button :class="{active: activeTab === 'info'}" @click="activeTab = 'info'">Info</button>
+  <main class="flex flex-row">
+    <div class="flex flex-col">
+      <button class="btn rounded-none" :class="{active: activeTab === 'basic'}" @click="activeTab = 'basic'">Basic</button>
+      <button class="btn rounded-none" :class="{active: activeTab === 'info'}" @click="activeTab = 'info'">Info</button>
     </div>
-    <div class="main">
+    <div class="p-2">
       <div v-if="!runPython">Python is not loaded</div>
       <div v-else>
         <Suspense>
           <div>
-            <BasicConfig v-if="activeTab === 'basic'" :py="runPython" :active-profile="activeProfile" />
+            <BasicConfig v-if="activeTab === 'basic'" :py="runPython" :active-profile="activeProfile" hard />
             <MouseInfo v-if="activeTab === 'info'" :py="runPython" />
           </div>
           <template #fallback>
@@ -43,28 +43,3 @@ function hasProfile(name: string) {
     </div>
   </main>
 </template>
-<style lang="scss" scoped>
-  button:hover, button.active {
-    background-color: rgba(255, 255, 255, 0.5);
-  }
-  main {
-    display: flex;
-    flex-direction: row;
-    .menu {
-      flex-grow: 0;
-      padding: 0.5em 0.5em;
-      display: flex;
-      flex-direction: column;
-      & > button {
-        padding: 0.5em 1em;
-        background-color: rgba(255, 255, 255, 0.2);
-        &:hover, &.active {
-          background-color: rgba(255, 255, 255, 0.5);
-        }
-      }
-    }
-    .main {
-      padding: 0.5em 0.5em;
-    }
-  }
-</style>

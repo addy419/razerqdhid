@@ -11,6 +11,14 @@ const isAtBottom = (element: HTMLElement) => {
   return element.scrollTop > (element.scrollHeight - element.offsetHeight - 100);
 };
 
+function scrollToBottom() {
+  if (consoleRef.value) {
+    consoleRef.value.scrollTop = consoleRef.value.scrollHeight;
+  }
+}
+
+defineExpose({scrollToBottom});
+
 onMounted(() => {
   const observer = new MutationObserver(() => {
     if (consoleRef.value && isAtBottom(consoleRef.value)) {
@@ -29,7 +37,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <ul class="console dark-bg" ref="consoleRef">
+  <ul class="console bg-base-200" ref="consoleRef">
     <li v-for="(item, index) in messages" :key="index">{{ item[0].toTimeString().split(' ')[0] }} {{ item[1] }}</li>
   </ul>
 </template>

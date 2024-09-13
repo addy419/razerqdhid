@@ -34,5 +34,5 @@ function hasHid(){
   <h1>Razer Basilisk V3 Tools</h1>
   <div>Browser must support WebHID to work, Click request and select device</div>
   <div>You browser <span v-if="hasHid()">probably supports WebHID</span><span v-else>does not support WebHID</span></div>
-  <button @click="requestDevice">Request</button>
+  <button class="btn" @click="requestDevice">Request</button>
 </template>
