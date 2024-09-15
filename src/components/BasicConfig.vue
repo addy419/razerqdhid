@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ModelRef, ref, toRaw, watch } from 'vue';
+import { computed, ModelRef, ref, watch } from 'vue';
 
 import type { RunPython } from '../main';
 

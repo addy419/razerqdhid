@@ -4,37 +4,50 @@ import type { Ref } from 'vue';
 import MouseInfo from './MouseInfo.vue';
 import BasicConfig from './BasicConfig.vue';
 import type { RunPython } from '../main';
+import ProfileConfig from './ProfileConfig.vue';
+const allProfileList = ['direct', 'white', 'red', 'green', 'blue', 'cyan'];
 const runPython = inject<Ref<RunPython | null>>('runPython');
-const activeProfile = ref('white');
-const activeTab = ref('basics');
-const hasProfileList = ref(['direct', 'white', 'red']);
+const activeProfile = ref('direct');
+const activeTab = ref('basic');
+const refreshKey = ref(0);
+const hasProfileList = ref(['direct', 'white']);
 function hasProfile(name: string) {
   return hasProfileList.value.indexOf(name) !== -1;
+}
+function updateHasProfileList(value: string[]) {
+  value = ['direct'].concat(value);
+  hasProfileList.value = value;
+  if (!value.includes(activeProfile.value)) {
+    activeProfile.value = 'direct';
+  }
 }
 </script>
 <template>
   <h1>Razer Basilisk V3 Tools</h1>
   <div>
     Profile:
-    <button class="btn btn-sm rounded-none" :class="{'btn-active': activeProfile === 'direct'}" :disabled="!hasProfile('direct')" @click="activeProfile = 'direct'">Direct</button>
-    <button class="btn btn-sm rounded-none" :class="{'btn-active': activeProfile === 'white'}" :disabled="!hasProfile('white')" @click="activeProfile = 'white'">White</button>
-    <button class="btn btn-sm rounded-none" :class="{'btn-active': activeProfile === 'red'}" :disabled="!hasProfile('red')" @click="activeProfile = 'red'">Red</button>
-    <button class="btn btn-sm rounded-none" :class="{'btn-active': activeProfile === 'green'}" :disabled="!hasProfile('green')" @click="activeProfile = 'green'">Green</button>
-    <button class="btn btn-sm rounded-none" :class="{'btn-active': activeProfile === 'blue'}" :disabled="!hasProfile('blue')" @click="activeProfile = 'blue'">Blue</button>
-    <button class="btn btn-sm rounded-none" :class="{'btn-active': activeProfile === 'cyan'}" :disabled="!hasProfile('cyan')" @click="activeProfile = 'cyan'">Cyan</button>
+    <button class="btn btn-sm rounded-none"
+      v-for="p in allProfileList"
+      :class="{'btn-active': activeProfile === p}" :disabled="!hasProfile(p)"
+      @click="activeProfile = p">{{ p }}</button>
   </div>
   <main class="flex flex-row">
     <div class="flex flex-col">
-      <button class="btn rounded-none" :class="{'btn-active': activeTab === 'basic'}" @click="activeTab = 'basic'">Basic</button>
-      <button class="btn rounded-none" :class="{'btn-active': activeTab === 'info'}" @click="activeTab = 'info'">Info</button>
+      <button class="btn rounded-none" :class="{'btn-active': activeTab === 'basic'}" @click="activeTab = 'basic'; refreshKey++; ">Basic</button>
+      <button class="btn rounded-none" :class="{'btn-active': activeTab === 'profile'}" @click="activeTab = 'profile'; refreshKey++; ">Profile</button>
+      <button class="btn rounded-none" :class="{'btn-active': activeTab === 'info'}" @click="activeTab = 'info'; refreshKey++; ">Info</button>
     </div>
     <div class="w-md p-2">
       <div v-if="!runPython">Python is not loaded</div>
       <div v-else>
         <Suspense>
           <div>
-            <BasicConfig v-if="activeTab === 'basic'" :py="runPython" :active-profile="activeProfile" hard/>
-            <MouseInfo v-if="activeTab === 'info'" :py="runPython" />
+            <BasicConfig v-if="activeTab === 'basic'"
+              :key="refreshKey" :py="runPython" :active-profile="activeProfile" hard/>
+            <MouseInfo v-if="activeTab === 'info'"
+              :key="refreshKey" :py="runPython" />
+            <ProfileConfig v-if="activeTab === 'profile'"
+              :key="refreshKey" :py="runPython" @update="updateHasProfileList" />
           </div>
           <template #fallback>
             <div>Loading...</div>

@@ -12,7 +12,7 @@ import { serviceWorkerFile } from 'virtual:vite-plugin-service-worker'
 import { ref } from 'vue';
 import type { Ref } from 'vue';
 
-export type RunPython = (code: string, options: object) => Promise<any>;
+export type RunPython = (code: string, options?: object) => Promise<any>;
 
 const pyClient: Ref<SyncClient | null> = ref(null);
 const _notifyCallback: Ref<Function | null> = ref(null);
@@ -74,7 +74,6 @@ if ("serviceWorker" in navigator) {
       var lastRunPython: Promise<any> | null = null;
 
       function runPython(code: string, options: object) {
-        console.log('options', options);
         if (client.state === 'idle') {
           const p = client.call(client.workerProxy.runPython, code, options, Comlink.proxy(notifyCallback));
           lastRunPython = p;

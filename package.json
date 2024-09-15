@@ -11,6 +11,7 @@
   "dependencies": {
     "comlink": "^4.4.1",
     "comsync": "^0.0.9",
+    "filesize": "^10.1.6",
     "pinia": "^2.2.2",
     "pyodide": "^0.26.2",
     "sync-message": "^0.0.12",
