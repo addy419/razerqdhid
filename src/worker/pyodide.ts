@@ -1,5 +1,5 @@
 import { loadPyodide, PyodideInterface } from 'pyodide';
-import type { PyDict } from 'pyodide/ffi';
+import { type PyDict } from 'pyodide/ffi';
 import * as Comlink from "comlink";
 import {syncExpose, SyncExtras} from "comsync";
 
@@ -67,7 +67,7 @@ Comlink.expose({
     }
     pyodide.setStdout({batched: (str) => notifyCallback('print', str)});
   },
-  runPython: syncExpose((syncExtras, code, options, notifyCallback: NotifyCallback) => {
+  runPython: syncExpose(async (syncExtras, code, options, notifyCallback: NotifyCallback) => {
     if (pyodide === null) {
       throw new Error('pyodide is not initialized');
     }
@@ -77,11 +77,15 @@ Comlink.expose({
     savedSyncExtras = syncExtras;
     savedNotifyCallback = notifyCallback;
     options = options ?? {};
-    options.globals = options.globals ?? pyGlobal;
+    options.globals = pyodide.toPy(options.globals) ?? pyGlobal;
     options.globals.set('syncExtras', syncExtras);
     options.globals.set('notifyCallback', notifyCallback);
     options.globals.set('await_js', await_js);
-    const result = pyodide.runPython(code, options);
+    options.locals = pyodide.toPy(options.locals);
+    const result = await pyodide.runPythonAsync(code, options);
+    if (result && result.toJs) {
+      return result.toJs({dict_converter : Object.fromEntries});
+    }
     return result;
   }),
   runTest: syncExpose((syncExtras, notifyCallback) => {

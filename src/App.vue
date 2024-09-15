@@ -18,7 +18,7 @@ var cl:Function, ce:Function, cw:Function;
 if(window.console && console.log){
 	cl = console.log;
 	console.log = function(){
-		addLog([...arguments].map(x => x.toString()).join(', '));
+		addLog([...arguments].map(x => String(x)).join(', '));
 		cl.apply(this, arguments)
 	}
 }
@@ -26,7 +26,7 @@ if(window.console && console.log){
 if(window.console && console.warn){
 	cw = console.warn;
 	console.warn = function(){
-		addLog(['Warn', ...arguments].map(x => x.toString()).join(', '));
+		addLog(['Warn', ...arguments].map(x => String(x)).join(', '));
 		cw.apply(this, arguments)
 	}
 }
@@ -34,7 +34,7 @@ if(window.console && console.warn){
 if(window.console && console.error){
 	ce = console.error;
 	console.error = function(){
-	  addLog(['Error', ...arguments].map(x => x.toString()).join(', '));
+	  addLog(['Error', ...arguments].map(x => String(x)).join(', '));
 		ce.apply(this, arguments)
 	}
 }

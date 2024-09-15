@@ -12,9 +12,11 @@ import { serviceWorkerFile } from 'virtual:vite-plugin-service-worker'
 import { ref } from 'vue';
 import type { Ref } from 'vue';
 
+export type RunPython = (code: string, options: object) => Promise<any>;
+
 const pyClient: Ref<SyncClient | null> = ref(null);
 const _notifyCallback: Ref<Function | null> = ref(null);
-const _runPython: Ref<Function | null> = ref(null);
+const _runPython: Ref<RunPython | null> = ref(null);
 
 const pinia = createPinia();
 const app = createApp(App);
@@ -69,8 +71,31 @@ if ("serviceWorker" in navigator) {
         }
       }
 
+      var lastRunPython: Promise<any> | null = null;
+
       function runPython(code: string, options: object) {
-        return client.call(client.workerProxy.runPython, code, options, Comlink.proxy(notifyCallback));
+        console.log('options', options);
+        if (client.state === 'idle') {
+          const p = client.call(client.workerProxy.runPython, code, options, Comlink.proxy(notifyCallback));
+          lastRunPython = p;
+          return p;
+        } else {
+          const newRunPython = new Promise((resolve, reject) => {
+            if (lastRunPython == null) {
+              throw new Error('client is busy and cannot get last run python');
+            }
+            lastRunPython.finally(() => {
+              const p = client.call(client.workerProxy.runPython, code, options, Comlink.proxy(notifyCallback));
+              p.then((result: any) => {
+                resolve(result);
+              }).catch((error: any) => {
+                reject(error);
+              });
+            });
+          });
+          lastRunPython = newRunPython;
+          return newRunPython;
+        }
       }
 
       client.call(client.workerProxy.init).then(() => {
