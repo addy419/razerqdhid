@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import type { RunPython } from '../main';
+import { until } from '@vueuse/core';
 const props = defineProps<{
   py: RunPython;
+  isConfigAllIdle: boolean;
 }>();
-const emit = defineEmits(['update']);
+
+const profileConfigData = defineModel<any>('profileConfigData');
+const enableAllConfigSections = defineModel<boolean>('enableAllConfigSections');
+
+const profileTextData = ref();
 
 const allProfileList = ['direct', 'white', 'red', 'green', 'blue', 'cyan'];
 const profileList = ref<string[]>([]);
@@ -29,26 +35,41 @@ async function deleteProfile(profile: string) {
   await updateProfileList();
 }
 
+async function exportConfig() {
+  enableAllConfigSections.value = true;
+  if (props.isConfigAllIdle){
+    await until(() => props.isConfigAllIdle).toBe(false, {timeout: 10000, throwOnTimeout: true});
+  }
+  await until(() => props.isConfigAllIdle).toBe(true, {timeout: 10000, throwOnTimeout: true});
+  profileTextData.value = JSON.stringify(profileConfigData.value);
+  enableAllConfigSections.value = false;
+}
+
 </script>
 <template>
   <div class="form-control">
     <h2>Profile</h2>
-    <div class="grid grid-cols-4">
+    <div class="grid grid-rows-2 grid-flow-col">
       <template v-for="p in allProfileList">
-        <span :class="{'opacity-40': !profileList.includes(p), 'text-accent border-r-8': profileList.includes(p)}">{{ p }}</span>
-        <button class="btn btn-sm min-w-24 btn-success"
+        <span class="inline-flex justify-center items-center" :class="{'bg-info text-info-content': profileList.includes(p), 'opacity-40': !profileList.includes(p)}">
+          <span>{{ p }}</span>
+        </span>
+        <button class="btn btn-sm min-w-24 btn-success join-item"
           v-if="p != 'direct' && !profileList.includes(p)"
           @click="newProfile(p)">New</button>
-        <button class="btn btn-sm min-w-24 btn-error"
+        <button class="btn btn-sm min-w-24 btn-error join-item"
           v-else-if="p != 'direct' && profileList.includes(p) && confirmDelete[p]"
           @click="deleteProfile(p)">Confirm</button>
-        <button class="btn btn-sm min-w-24 btn-warning"
+        <button class="btn btn-sm min-w-24 btn-warning join-item"
           v-else-if="p != 'direct' && profileList.includes(p)"
           @click="confirmDelete[p] = true">Delete</button>
-        <span v-else></span>
-        <button class="btn btn-sm" :disabled="!profileList.includes(p) && p != 'direct'" >Export</button>
-        <button class="btn btn-sm" :disabled="!profileList.includes(p) && p != 'direct'" >Import</button>
+        <button class="btn btn-sm min-w-24 btn-disabled join-item" v-else></button>
       </template>
     </div>
+    <textarea
+      placeholder="Profile text data"
+      class="textarea textarea-bordered textarea-sm w-full h-40 my-4"
+      v-model="profileTextData"></textarea>
+    <button @click="exportConfig">Export config</button>
   </div>
 </template>

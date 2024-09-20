@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vueuse/core": "^11.1.0",
     "comlink": "^4.4.1",
     "comsync": "^0.0.9",
     "filesize": "^10.1.6",

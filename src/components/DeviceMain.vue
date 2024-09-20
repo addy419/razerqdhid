@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, ref } from 'vue';
+import { inject, ref, computed } from 'vue';
 import type { Ref } from 'vue';
 import MouseInfo from './MouseInfo.vue';
 import BasicConfig from './BasicConfig.vue';
@@ -21,33 +21,59 @@ function updateHasProfileList(value: string[]) {
     activeProfile.value = 'direct';
   }
 }
+const profileConfigData = ref({
+  basic: {},
+});
+const profileConfigStatus = ref({
+  basic: {},
+});
+const isConfigAllIdle = computed(() => {
+  for (let [sectionName, sectionValue] of Object.entries(profileConfigStatus.value)) {
+    for (let [name, status] of Object.entries(sectionValue)) {
+      if (status !== 'idle') {
+        return false;
+      }
+    }
+  }
+  return true;
+});
+const enableAllConfigSections = ref(false);
+
+
 </script>
 <template>
   <h1>Razer Basilisk V3 Tools</h1>
   <div>
     Profile:
-    <button class="btn btn-sm rounded-none"
-      v-for="p in allProfileList"
-      :class="{'btn-active': activeProfile === p}" :disabled="!hasProfile(p)"
-      @click="activeProfile = p">{{ p }}</button>
+    <div class="join">
+      <button class="btn btn-sm join-item"
+        v-for="p in allProfileList"
+        :class="{'btn-active': activeProfile === p}" :disabled="!hasProfile(p)"
+        @click="activeProfile = p">{{ p }}</button>
+    </div>
+    <span class="loading loading-spinner loading-sm" v-if="!isConfigAllIdle"></span>
   </div>
   <main class="flex flex-row">
-    <div class="flex flex-col">
-      <button class="btn rounded-none" :class="{'btn-active': activeTab === 'basic'}" @click="activeTab = 'basic'; refreshKey++; ">Basic</button>
-      <button class="btn rounded-none" :class="{'btn-active': activeTab === 'profile'}" @click="activeTab = 'profile'; refreshKey++; ">Profile</button>
-      <button class="btn rounded-none" :class="{'btn-active': activeTab === 'info'}" @click="activeTab = 'info'; refreshKey++; ">Info</button>
+    <div class="join join-vertical">
+      <button class="btn join-item" :class="{'btn-active': activeTab === 'basic'}" @click="activeTab = 'basic'; refreshKey++; ">Basic</button>
+      <button class="btn join-item" :class="{'btn-active': activeTab === 'profile'}" @click="activeTab = 'profile'; refreshKey++; ">Profile</button>
+      <button class="btn join-item" :class="{'btn-active': activeTab === 'info'}" @click="activeTab = 'info'; refreshKey++; ">Info</button>
     </div>
     <div class="w-md p-2">
       <div v-if="!runPython">Python is not loaded</div>
       <div v-else>
         <Suspense>
           <div>
-            <BasicConfig v-if="activeTab === 'basic'"
-              :key="refreshKey" :py="runPython" :active-profile="activeProfile" hard/>
+            <BasicConfig v-if="activeTab === 'basic' || enableAllConfigSections" v-show="!enableAllConfigSections"
+              :key="refreshKey" :py="runPython" :active-profile="activeProfile" hard
+              v-model:bridge-data="profileConfigData.basic" v-model:bridge-status="profileConfigStatus.basic"/>
             <MouseInfo v-if="activeTab === 'info'"
               :key="refreshKey" :py="runPython" />
-            <ProfileConfig v-if="activeTab === 'profile'"
-              :key="refreshKey" :py="runPython" @update="updateHasProfileList" />
+            <!-- v-show is used to load available profiles when initially loaded -->
+            <ProfileConfig v-show="activeTab === 'profile'"
+              :key="refreshKey" :py="runPython" @update="updateHasProfileList"
+              :is-config-all-idle="isConfigAllIdle"
+              v-model:profile-config-data="profileConfigData" v-model:enable-all-config-sections="enableAllConfigSections"/>
           </div>
           <template #fallback>
             <div>Loading...</div>

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, ModelRef, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
-import type { RunPython } from '../main';
+import { RunPython } from '../main';
+import { BridgeData, BridgeStatus, makeBridge } from './bridge';
 
 const props = defineProps<{
   py: RunPython;
@@ -9,45 +10,12 @@ const props = defineProps<{
   activeProfile: string;
 }>();
 
-function bridge<T>(model: ModelRef<T>, getPy: string, getLocals: () => object, setPy: string, setLocals: (value: Exclude<T, undefined>) => object) {
-  let modelRef = ref<T>(model.value); // necessary as model of Array doesn't update when assigned with index
-  let noWriteOnce = false;
-  let noUpdateOnce = false;
-  watch(model, (value) => {
-    if (noUpdateOnce) { noUpdateOnce = true; return; }
-    modelRef.value = value;
-  })
-  const read = () => {
-    if (props.hard) {
-      props.py(getPy.replace('%p', 'profile=pt.Profile[profile]'), {
-        locals: {profile: props.activeProfile.toUpperCase(), ...getLocals()}
-      }).then((r) => {
-        noWriteOnce = true;
-        modelRef.value = r;
-      });
-    }
-  };
-  read();
-  watch(() => props.activeProfile, read);
-  let lastWrite: number | null = null;
-  watch(modelRef, (value) => {
-    noUpdateOnce = true;
-    model.value = value; // sync outer value
-    if (noWriteOnce) { noWriteOnce = false; return; }
-    if (!props.hard || value === undefined) { return; }
-    if (lastWrite) { clearTimeout(lastWrite); }
-    lastWrite = setTimeout(() => { // rate limit the write operation
-      lastWrite = null;
-      props.py(setPy.replace('%p', 'profile=pt.Profile[profile]'), {
-        locals: {profile: props.activeProfile.toUpperCase(), ...setLocals(value as Exclude<T, undefined>)}
-      });
-    }, 500);
-  }, {deep: true});
-  return modelRef;
-}
+const bridgeData = defineModel<BridgeData>('bridgeData', {default: {}});
+const bridgeStatus = defineModel<BridgeStatus>('bridgeStatus', {default: {}});
 
-const _scrollMode = defineModel<string>('scrollMode');
-const scrollMode = bridge(_scrollMode,
+const bridge = makeBridge(bridgeData, bridgeStatus, props);
+
+const scrollMode = bridge<string>('scrollMode', 'tactile',
   'device.get_scroll_mode(%p).name.lower()', () => ({}),
   'device.set_scroll_mode(pt.ScrollMode[x.upper()], %p)', (value) => ({x: value}),
 );
@@ -56,20 +24,17 @@ const scrollModeToggle = computed({
   set: (value) => scrollMode.value = value ? 'freespin' : 'tactile'
 });
 
-const _scrollAcceleration = defineModel<boolean>('scrollAcceleration', {default: undefined});
-const scrollAcceleration = bridge(_scrollAcceleration,
+const scrollAcceleration = bridge<Boolean>('scrollAcceleration', false,
   'device.get_scroll_acceleration(%p)', () => ({}),
   'device.set_scroll_acceleration(x, %p)', (value) => ({x: value}),
 );
 
-const _scrollSmartReel = defineModel<boolean>('scrollSmartReel', {default: undefined});
-const scrollSmartReel = bridge(_scrollSmartReel,
+const scrollSmartReel = bridge<Boolean>('scrollSmartReel', false,
   'device.get_scroll_smart_reel(%p)', () => ({}),
   'device.set_scroll_smart_reel(x, %p)', (value) => ({x: value}),
 );
 
-const _pollingRate = defineModel<number>('pollingRate', {default: 1});
-const pollingRate = bridge(_pollingRate,
+const pollingRate = bridge<number>('pollingRate', 1,
   'device.get_polling_rate(%p)', () => ({}),
   'device.set_polling_rate(x, %p)', (value) => ({x: value}),
 );
@@ -82,14 +47,12 @@ const pollingRateRange = computed({
   set: (value) => {pollingRate.value = {4:1, 3:2, 2:4, 1:8, 0:16}[value] ?? 1},
 });
 
-const _dpiXy = defineModel('dpiXy', {default: [0, 0]});
-const dpiXy = bridge(_dpiXy,
+const dpiXy = bridge<[number, number]>('dpiXy', [800, 800],
   'device.get_dpi_xy(%p)', () => ({}),
   'device.set_dpi_xy((x, y), %p)', (value) => ({x: value[0], y: value[1]}),
 );
 
-const _dpiStages = defineModel<[[number, number][], number]>('dpiStages', {default: [[], 0]});
-const dpiStages = bridge(_dpiStages,
+const dpiStages = bridge<[[number, number][], number]>('dpiStages', [[[800, 800]], 1],
   'device.get_dpi_stages(%p)', () => ({}),
   'device.set_dpi_stages(ds, acs, %p)', (value) => ({ds: JSON.parse(JSON.stringify(value[0])), acs: value[1]}),
 );
