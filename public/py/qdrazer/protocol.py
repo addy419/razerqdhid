@@ -335,18 +335,20 @@ class ButtonFunction(ctypes.Structure):
     def set_dpi_switch(self, fn, dpi=None):
         self.fn_class = FnClass.DPI_SWITCH
         if fn == FnDpiSwitch.FIXED:
-            self.set_fn_value(struct.pack('>BHH', fn, dpi[0], dpi[1]))
+            self.set_fn_value(struct.pack('>BHH', fn.value, dpi[0], dpi[1]))
         else:
-            self.set_fn_value(struct.pack('>B', fn))
+            self.set_fn_value(struct.pack('>B', fn.value))
         return self
     def get_dpi_switch(self):
         if self.get_subtype() != 'dpi_switch':
             raise ValueError()
         if len(self.get_fn_value()) == 5:
             fn, *dpi = struct.unpack('>BHH', self.get_fn_value())
+            fn = FnDpiSwitch(fn)
             return dict(fn=fn, dpi=dpi)
         else:
             fn, = struct.unpack('>B', self.get_fn_value())
+            fn = FnDpiSwitch(fn)
             return dict(fn=fn)
     
     def set_profile_switch(self, fn=0x04):
@@ -366,7 +368,7 @@ class ButtonFunction(ctypes.Structure):
         if self.get_subtype() != 'system':
             raise ValueError()
         fn, = struct.unpack('>B', self.get_fn_value())
-        return FnSystem(fn)
+        return dict(fn=FnSystem(fn))
     
     def set_consumer(self, fn):
         self.fn_class = FnClass.CONSUMER

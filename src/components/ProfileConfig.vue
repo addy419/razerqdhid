@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import type { RunPython } from '../main';
 import { until } from '@vueuse/core';
+const emit = defineEmits(['update']);
 const props = defineProps<{
   py: RunPython;
   isConfigAllIdle: boolean;
