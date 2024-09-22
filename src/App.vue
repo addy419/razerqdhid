@@ -9,7 +9,7 @@ const hasDevice = ref(false);
 const showConsole = ref(false);
 const logConsole = ref<InstanceType<typeof LogConsole> | null>(null);
 
-const logs = ref([[new Date(), 'Here be logs']]);
+const logs = ref<[Date, string][]>([[new Date(), 'Here be logs']]);
 function addLog(text: string) {
   logs.value.push([new Date(), text]);
 }
@@ -53,6 +53,7 @@ window.addEventListener("unhandledrejection", (event) => {
     <ConnectDevice v-if="!hasDevice" @device-created="hasDevice = true" />
     <DeviceMain v-else />
   </div>
+  <div class="h-96"></div>
   <footer>
     <button class="btn btn-sm" @click="showConsole = !showConsole; if(logConsole) {logConsole.scrollToBottom()}">Console</button>
     <LogConsole v-show="showConsole" ref="logConsole" :messages="logs" />

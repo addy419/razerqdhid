@@ -249,7 +249,7 @@ class ButtonFunction(ctypes.Structure):
         self.set_fn_value(b'')
         return self
     
-    SUBTYPE = {
+    CATEGORY = {
         FnClass.DISABLED: 'disabled',
         FnClass.MOUSE: 'mouse',
         FnClass.KEYBOARD: 'keyboard',
@@ -267,8 +267,8 @@ class ButtonFunction(ctypes.Structure):
         FnClass.MACRO_SEQUENCE: 'macro',
         FnClass.SCROLL_MODE_TOGGLE: 'scroll_mode_toggle',
     }
-    def get_subtype(self):
-        return self.SUBTYPE[self.fn_class]
+    def get_category(self):
+        return self.CATEGORY[self.fn_class]
     
     def set_mouse(self, fn, *, turbo=None, double_click=False):
         if double_click:
@@ -282,7 +282,7 @@ class ButtonFunction(ctypes.Structure):
             self.set_fn_value(struct.pack('>B', fn.value))
         return self
     def get_mouse(self):
-        if self.get_subtype() != 'mouse':
+        if self.get_category() != 'mouse':
             raise ValueError()
         if self.fn_class in (FnClass.MOUSE, FnClass.DOUBLE_CLICK):
             fn, = struct.unpack('>B', self.get_fn_value())
@@ -301,7 +301,7 @@ class ButtonFunction(ctypes.Structure):
             self.set_fn_value(struct.pack('>BBH', modifier.value, key, turbo))
         return self
     def get_keyboard(self):
-        if self.get_subtype() != 'keyboard':
+        if self.get_category() != 'keyboard':
             raise ValueError()
         if self.fn_class == FnClass.KEYBOARD:
             modifier, key = struct.unpack('>BB', self.get_fn_value())
@@ -313,7 +313,7 @@ class ButtonFunction(ctypes.Structure):
             return dict(key=key, modifier=modifier, turbo=turbo)
     
     def set_macro(self, macro_id, *, mode=FnClass.MACRO_FIXED, times=1):
-        if self.SUBTYPE[mode] != 'macro':
+        if self.CATEGORY[mode] != 'macro':
             raise ValueError()
         self.fn_class = mode
         if mode == FnClass.MACRO_FIXED:
@@ -322,7 +322,7 @@ class ButtonFunction(ctypes.Structure):
             self.set_fn_value(struct.pack('>H', macro_id))
         return self
     def get_macro(self):
-        if self.get_subtype() != 'macro':
+        if self.get_category() != 'macro':
             raise ValueError()
         mode = self.fn_class
         if mode == FnClass.MACRO_FIXED:
@@ -340,7 +340,7 @@ class ButtonFunction(ctypes.Structure):
             self.set_fn_value(struct.pack('>B', fn.value))
         return self
     def get_dpi_switch(self):
-        if self.get_subtype() != 'dpi_switch':
+        if self.get_category() != 'dpi_switch':
             raise ValueError()
         if len(self.get_fn_value()) == 5:
             fn, *dpi = struct.unpack('>BHH', self.get_fn_value())
@@ -356,7 +356,7 @@ class ButtonFunction(ctypes.Structure):
         self.set_fn_value(struct.pack('>B', fn))
         return self
     def get_profile_switch(self):
-        if self.get_subtype() != 'profile_switch':
+        if self.get_category() != 'profile_switch':
             raise ValueError()
         fn, = struct.unpack('>B', self.get_fn_value())
         return dict(fn=fn)
@@ -365,7 +365,7 @@ class ButtonFunction(ctypes.Structure):
         self.fn_class = FnClass.SYSTEM
         self.set_fn_value(struct.pack('>B', fn.value))
     def get_system(self):
-        if self.get_subtype() != 'system':
+        if self.get_category() != 'system':
             raise ValueError()
         fn, = struct.unpack('>B', self.get_fn_value())
         return dict(fn=FnSystem(fn))
@@ -375,7 +375,7 @@ class ButtonFunction(ctypes.Structure):
         self.set_fn_value(struct.pack('>H', fn))
         return self
     def get_consumer(self):
-        if self.get_subtype() != 'consumer':
+        if self.get_category() != 'consumer':
             raise ValueError()
         fn, = struct.unpack('>H', self.get_fn_value())
         return dict(fn=fn)
@@ -385,7 +385,7 @@ class ButtonFunction(ctypes.Structure):
         self.set_fn_value(struct.pack('>B', fn))
         return self
     def get_hypershift_toggle(self):
-        if self.get_subtype() != 'hypershift_toggle':
+        if self.get_category() != 'hypershift_toggle':
             raise ValueError()
         fn, = struct.unpack('>B', self.get_fn_value())
         return dict(fn=fn)
@@ -395,7 +395,7 @@ class ButtonFunction(ctypes.Structure):
         self.set_fn_value(struct.pack('>B', fn))
         return self
     def get_scroll_mode_toggle(self):
-        if self.get_subtype() != 'scroll_mode_toggle':
+        if self.get_category() != 'scroll_mode_toggle':
             raise ValueError()
         fn, = struct.unpack('>B', self.get_fn_value())
         return dict(fn=fn)
@@ -441,7 +441,7 @@ class MacroOp:
     def list_to_bytes(cls, l):
         return b''.join(bytes(it) for it in l)
         
-    SUBTYPE = {
+    CATEGORY = {
         MacroOpClass.KEYBOARD_DOWN: 'keyboard',
         MacroOpClass.KEYBOARD_UP: 'keyboard',
         MacroOpClass.SYSTEM_A: 'system',
@@ -453,8 +453,8 @@ class MacroOp:
         MacroOpClass.DELAY_1: 'delay',
         MacroOpClass.DELAY_2: 'delay',
     }
-    def get_subtype(self):
-        return self.SUBTYPE[self.op_type]
+    def get_category(self):
+        return self.CATEGORY[self.op_type]
 
     def set_keyboard(self, key, *, is_up=False):
         if is_up:
@@ -463,7 +463,7 @@ class MacroOp:
             self.op_type = MacroOpClass.KEYBOARD_DOWN
         self.op_value = struct.pack('>B', key)
     def get_keyboard(self):
-        if self.get_subtype() != 'keyboard':
+        if self.get_category() != 'keyboard':
             raise ValueError()
         return dict(
             key=struct.unpack('>B', self.op_value)[0],
@@ -477,7 +477,7 @@ class MacroOp:
             self.op_type = MacroOpClass.SYSTEM_A
         self.op_value = struct.pack('>B', system.value)
     def get_system(self):
-        if self.get_subtype() != 'system':
+        if self.get_category() != 'system':
             raise ValueError()
         return dict(
             key=struct.unpack('>B', self.op_value)[0],
@@ -491,7 +491,7 @@ class MacroOp:
             self.op_type = MacroOpClass.CONSUMER_A
         self.op_value = struct.pack('>B', consumer.value)
     def get_consumer(self):
-        if self.get_subtype() != 'consumer':
+        if self.get_category() != 'consumer':
             raise ValueError()
         return dict(
             key=struct.unpack('>B', self.op_value)[0],
@@ -502,7 +502,7 @@ class MacroOp:
         self.op_type = MacroOpClass.MOUSE_BUTTON
         self.op_value = struct.pack('>B', button.value)
     def get_mouse_button(self):
-        if self.get_subtype() != 'mouse_button':
+        if self.get_category() != 'mouse_button':
             raise ValueError()
         return MacroOpMouseButton(struct.unpack('>B', self.op_value)[0])
         
@@ -510,7 +510,7 @@ class MacroOp:
         self.op_type = MacroOpClass.MOUSE_WHEEL
         self.op_value = struct.pack('>b', value)
     def get_mouse_wheel(self):
-        if self.get_subtype() != 'mouse_wheel':
+        if self.get_category() != 'mouse_wheel':
             raise ValueError()
         return struct.unpack('>b', self.op_value)[0]
     
@@ -522,7 +522,7 @@ class MacroOp:
             self.op_type = MacroOpClass.DELAY_2
             self.op_value = struct.pack('>H', ms)
     def get_delay(self):
-        if self.get_subtype() != 'delay':
+        if self.get_category() != 'delay':
             raise ValueError()
         if self.op_type == MacroOpClass.DELAY_1:
             return struct.unpack('>B', self.op_value)[0]

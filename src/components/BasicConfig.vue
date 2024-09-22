@@ -94,9 +94,9 @@ function dpiCopyXY() {
     </div>
     <h2>Polling rate</h2>
     <div class="flex flex-row gap-4">
-      <input type="number" min="1" max="255" class="input input-sm input-bordered w-16" v-model="pollingRateInput"/> 
+      <input type="number" min="1" max="255" class="input input-sm input-bordered w-16" v-model.lazy="pollingRateInput"/> 
       <div class="flex-1">
-        <input type="range" min="0" max="4" value="0" class="range" step="1" v-model="pollingRateRange" />
+        <input type="range" min="0" max="4" value="0" class="range" step="1" v-model.lazy="pollingRateRange" />
         <div class="input-label">
           <span>ms</span><span>125</span><span>250</span><span>500</span><span>1000</span>
         </div>
@@ -108,17 +108,17 @@ function dpiCopyXY() {
       <span class="mx-2">X:</span>
       <span class="mx-2">Y:</span>
       <template v-for="(xy, index) in dpiStages[0]" :key="index">
-        <input type="number" min="100" max="25600" step="100" class="input input-sm input-bordered rounded-none min-w-16" :class="{'input-primary': index + 1 == dpiStages[1]}" v-model="xy[0]"/>
-        <input type="number" min="100" max="25600" step="100" class="input input-sm input-bordered rounded-none min-w-16" :class="{'input-primary': index + 1 == dpiStages[1]}" v-model="xy[1]"/>
+        <input type="number" min="100" max="25600" step="100" class="input input-sm input-bordered rounded-none min-w-16" :class="{'input-primary': index + 1 == dpiStages[1]}" v-model.lazy="xy[0]"/>
+        <input type="number" min="100" max="25600" step="100" class="input input-sm input-bordered rounded-none min-w-16" :class="{'input-primary': index + 1 == dpiStages[1]}" v-model.lazy="xy[1]"/>
       </template>
       <span></span>
       <span><button class="btn btn-sm" @click="dpiCopyXY">Y=X</button></span>
     </div>
     <div class="my-2 flex gap-2 place-items-baseline">
-      <span class="flex-shrink-0">Stages: </span><input type="number" min="1" max="5" step="1" class="input input-sm input-bordered w-16" v-model="dpiStageCount"/>
-      <span class="flex-shrink-0">Active: </span><input type="number" min="1" max="5" step="1" class="input input-sm input-bordered w-16" v-model="dpiStages[1]"/>
-      <span class="flex-shrink-0">Current X:</span><input type="number" min="100" max="25600" step="100" class="input input-sm input-bordered rounded-none min-w-16" v-model.number="dpiXy[0]"/>
-      <span class="flex-shrink-0">Y:</span><input type="number" min="100" max="25600" step="100" class="input input-sm input-bordered rounded-none min-w-16" v-model.number="dpiXy[1]"/>
+      <span class="flex-shrink-0">Stages: </span><input type="number" min="1" max="5" step="1" class="input input-sm input-bordered w-16" v-model.lazy="dpiStageCount"/>
+      <span class="flex-shrink-0">Active: </span><input type="number" min="1" max="5" step="1" class="input input-sm input-bordered w-16" v-model.lazy="dpiStages[1]"/>
+      <span class="flex-shrink-0">Current X:</span><input type="number" min="100" max="25600" step="100" class="input input-sm input-bordered rounded-none min-w-16" v-model.lazy.number="dpiXy[0]"/>
+      <span class="flex-shrink-0">Y:</span><input type="number" min="100" max="25600" step="100" class="input input-sm input-bordered rounded-none min-w-16" v-model.lazy.number="dpiXy[1]"/>
     </div>
   </div>
 </template>
