@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 
 import { RunPython } from '../main';
 import { BridgeData, BridgeStatus, makeBridge } from './bridge';
+import { hidKeyboardCode } from './hidcode';
 
 const props = defineProps<{
   py: RunPython;
@@ -66,8 +67,8 @@ def f(profile, button, hypershift):
 f(profile, button, hypershift)
 `, () => ({button: b, hypershift: hs}),
 `
-from functools import reduce
 def f(profile, button, hypershift, value):
+  from functools import reduce
   ct = value[0]
   m = value[1]
   if ct == 'mouse':
@@ -75,13 +76,13 @@ def f(profile, button, hypershift, value):
       m['fn'] = pt.FnMouse[m['fn'].upper()]
   elif ct == 'keyboard':
     if 'modifier' in m:
-      m['modifier'] = reduce(lambda x, y: x | y, [pt.FnKeyboardModifier[x.upper()] for x in list(m['modifier'])])
+      m['modifier'] = reduce((lambda x, y: x | y), [pt.FnKeyboardModifier[x.upper()] for x in list(m['modifier'])], pt.FnKeyboardModifier(0))
   elif ct == 'macro':
     if 'mode' in m:
       m['mode'] = pt.FnClass[m['mode'].upper()]
   elif ct == 'system':
     if 'fn' in m:
-      m['fn'] = reduce(lambda x, y: x | y, [pt.FnSystem[x.upper()] for x in list(m['fn'])])
+      m['fn'] = reduce((lambda x, y: x | y), [pt.FnSystem[x.upper()] for x in list(m['fn'])], pt.FnKeyboardModifier(0))
   elif ct == 'dpi_switch':
     if 'fn' in m:
       m['fn'] = pt.FnDpiSwitch[m['fn'].upper()]
@@ -121,7 +122,29 @@ const selectedButtonFunction = computed({
 });
 
 const fnMouse = ['left', 'right', 'middle', 'backward', 'forward', 'wheel_up', 'wheel_down', 'wheel_left', 'wheel_right'];
+const fnKeyboardModifier = ['left_control', 'left_shift', 'left_alt', 'left_gui', 'right_control', 'right_shift', 'right_alt', 'right_gui'];
+function resetFunctionCategory(newCategory: string) {
+  if (selectedButtonFunction.value[0] === newCategory) {
+    return;
+  }
+  if (newCategory === 'disabled') {
+    selectedButtonFunction.value = ['disabled', {}];
+  } else if (newCategory === 'mouse') {
+    selectedButtonFunction.value = ['mouse', {'fn': 'left', 'double_click': false, 'turbo': null}];
+  } else if (newCategory === 'keyboard') {
+    selectedButtonFunction.value = ['keyboard', {'key': 0x04, 'modifier': [], 'turbo': null}];
+  }
+}
 
+function toggleKeyboardModifier(m: string) {
+  if (selectedButtonFunction.value[1].modifier.includes(m)) {
+    // included, remove
+    const i = selectedButtonFunction.value[1].modifier.indexOf(m)
+    selectedButtonFunction.value[1].modifier.splice(i, 1);
+  } else {
+    selectedButtonFunction.value[1].modifier.push(m);
+  }
+}
 
 </script>
 <template>
@@ -144,8 +167,9 @@ const fnMouse = ['left', 'right', 'middle', 'backward', 'forward', 'wheel_up', '
     <h2>Function</h2>
     <div class="grid grid-cols-4 items-baseline">
       <button class="btn btn-sm"
-        :class="{'btn-active': selectedButtonFunction[0] === b}"
         v-for="b in functionCategoryList"
+        :class="{'btn-active': selectedButtonFunction[0] === b}"
+        @click="resetFunctionCategory(b)"
         >{{ b }}</button>
     </div>
     <div v-if="selectedButtonFunction[0] == 'disabled'">
@@ -192,6 +216,26 @@ const fnMouse = ['left', 'right', 'middle', 'backward', 'forward', 'wheel_up', '
           ? (1000 / selectedButtonFunction[1].turbo).toFixed(1)
           : '-'
         }} times / s)</span>
+      </div>
+    </div>
+    <div v-else-if="selectedButtonFunction[0] == 'keyboard'">
+      <div class="flex flex-row gap-4 place-items-center">
+        <span>Key: </span>
+        <input type="number" min="0" max="255" class="input input-sm input-bordered w-24"
+          :value="selectedButtonFunction[1].key ?? 0"
+          @change="(event) => {selectedButtonFunction[1].key = parseInt(event.target?.value) || 0x04}"/>
+        <select class="select w-full max-w-xs" v-model="selectedButtonFunction[1].key">
+          <option v-for="[code, name] in Object.entries(hidKeyboardCode)" :value="parseInt(code)">{{ code }} {{ name }}</option>
+        </select>
+      </div>
+      <span>Modifiers: </span>
+      <div class="grid grid-cols-4 gap-2 place-items-center">
+        <label class="label cursor-pointer space-x-4" v-for="m in fnKeyboardModifier">
+          <input type="checkbox" class="checkbox checkbox-sm"
+            :checked="selectedButtonFunction[1].modifier.includes(m)"
+            @change="toggleKeyboardModifier(m)" />
+          <span>{{ m }}</span>
+        </label>
       </div>
     </div>
   </div>
