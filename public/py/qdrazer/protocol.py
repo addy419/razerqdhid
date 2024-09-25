@@ -252,6 +252,8 @@ class ButtonFunction(ctypes.Structure):
     def get_fn_value(self):
         return bytes(self.fn_value[:self.fn_value_length])
 
+    def get_disabled(self):
+        return {}
     def set_disabled(self):
         self.fn_class = FnClass.DISABLED
         self.set_fn_value(b'')

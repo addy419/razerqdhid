@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 
 import { RunPython } from '../main';
 import { BridgeData, BridgeStatus, makeBridge } from './bridge';
-import { hidKeyboardCode } from './hidcode';
+import { hidConsumerCode, hidKeyboardCode } from './hidcode';
 
 const props = defineProps<{
   py: RunPython;
@@ -89,7 +89,7 @@ def f(profile, button, hypershift, value):
       m['mode'] = pt.FnClass[m['mode'].upper()]
   elif ct == 'system':
     if 'fn' in m:
-      m['fn'] = reduce((lambda x, y: x | y), [pt.FnSystem[x.upper()] for x in list(m['fn'])], pt.FnKeyboardModifier(0))
+      m['fn'] = reduce((lambda x, y: x | y), [pt.FnSystem[x.upper()] for x in list(m['fn'])], pt.FnSystem(0))
   elif ct == 'dpi_switch':
     if 'fn' in m:
       m['fn'] = pt.FnDpiSwitch[m['fn'].upper()]
@@ -151,6 +151,14 @@ function resetFunctionCategory(newCategory: string) {
     selectedButtonFunction.value = ['dpi_switch', {'fn': 'next_loop', dpi: [800, 800], stage: 1}];
   } else if (newCategory === 'profile_switch') {
     selectedButtonFunction.value = ['profile_switch', {'fn': 'next_loop'}];
+  } else if (newCategory === 'consumer') {
+    selectedButtonFunction.value = ['consumer', {'fn': 0xb0}];
+  } else if (newCategory === 'system') {
+    selectedButtonFunction.value = ['system', {'fn': ['power_down']}];
+  } else if (newCategory === 'hypershift_toggle') {
+    selectedButtonFunction.value = ['hypershift_toggle', {'fn': 1}];
+  } else if (newCategory === 'scroll_mode_toggle') {
+    selectedButtonFunction.value = ['scroll_mode_toggle', {'fn': 1}];
   }
 }
 
@@ -161,6 +169,16 @@ function toggleKeyboardModifier(m: string) {
     selectedButtonFunction.value[1].modifier.splice(i, 1);
   } else {
     selectedButtonFunction.value[1].modifier.push(m);
+  }
+}
+
+function toggleSystemFn(m: string) {
+  if (selectedButtonFunction.value[1].fn.includes(m)) {
+    // included, remove
+    const i = selectedButtonFunction.value[1].fn.indexOf(m)
+    selectedButtonFunction.value[1].fn.splice(i, 1);
+  } else {
+    selectedButtonFunction.value[1].fn.push(m);
   }
 }
 
@@ -415,6 +433,31 @@ function parseIntDefault(s: string, defaultValue: number) {
           <option v-for="profile in ['white', 'red', 'green', 'blue', 'cyan']" :value="profile">{{ profile }}</option>
         </select>
       </div>
+    </div>
+    <div v-else-if="selectedButtonFunction[0] == 'system'">
+      <div class="grid grid-cols-4 gap-2 place-items-center">
+        <label class="label cursor-pointer space-x-4" v-for="m in ['power_down', 'sleep', 'wake_up']">
+          <input type="checkbox" class="checkbox checkbox-sm"
+            :checked="selectedButtonFunction[1].fn.includes(m)"
+            @change="toggleSystemFn(m)" />
+          <span>{{ m }}</span>
+        </label>
+      </div>
+    </div>
+    <div v-else-if="selectedButtonFunction[0] == 'consumer'">
+      <div class="flex flex-row gap-4 place-items-center">
+        <span>Function: </span>
+        <input type="number" min="0" max="65535" class="input input-sm input-bordered w-24"
+          :value="selectedButtonFunction[1].fn ?? 0"
+          @change="(event) => {selectedButtonFunction[1].fn = parseIntDefault(event.target?.value, 0xb0)}"/>
+        <select class="select select-bordered w-full max-w-xs" v-model="selectedButtonFunction[1].fn">
+          <option v-for="[code, name] in Object.entries(hidConsumerCode)" :value="parseInt(code)">{{ code }} {{ name }}</option>
+        </select>
+      </div>
+    </div>
+    <div v-else-if="selectedButtonFunction[0] == 'hypershift_toggle'">
+    </div>
+    <div v-else-if="selectedButtonFunction[0] == 'scroll_mode_toggle'">
     </div>
   </div>
 </template>
