@@ -32,48 +32,49 @@ for (let hs of [true, false]) {
     buttonFunctionMap[b + (hs ? '_hypershift' : '')] = bridge(b + (hs ? '_hypershift' : ''), ['', {}],
 `
 def f(profile, button, hypershift):
+  import struct
   bf = device.get_button_function(
     pt.Button[button.upper()],
     pt.Hypershift.ON if hypershift else pt.Hypershift.OFF,
     %p)
   try:
     ct = bf.get_category()
-  except IndexError:
+    if ct == 'mouse':
+      m = bf.get_mouse()
+      if 'fn' in m:
+        m['fn'] = m['fn'].name.lower()
+      return ct, m
+    elif ct == 'keyboard':
+      m = bf.get_keyboard()
+      if 'modifier' in m:
+        m['modifier'] = [x.name.lower() for x in list(m['modifier'])]
+      return ct, m
+    elif ct == 'macro':
+      m = bf.get_macro()
+      if 'mode' in m:
+        m['mode'] = m['mode'].name.lower()
+      return ct, m
+    elif ct == 'system':
+      m = bf.get_system()
+      if 'fn' in m:
+        m['fn'] = [x.name.lower() for x in list(m['fn'])]
+      return ct, m
+    elif ct == 'dpi_switch':
+      m = bf.get_dpi_switch()
+      if 'fn' in m:
+        m['fn'] = m['fn'].name.lower()
+      return ct, m
+    elif ct == 'profile_switch':
+      m = bf.get_profile_switch()
+      if 'fn' in m:
+        m['fn'] = m['fn'].name.lower()
+      if 'profile' in m:
+        m['profile'] = m['profile'].name.lower()
+      return ct, m
+    else:
+      return ct, getattr(bf, 'get_' + ct)()
+  except (IndexError, struct.error):
     return 'custom', {'fn_class': bf._fn_class, 'fn_value': list(bf.get_fn_value())}
-  if ct == 'mouse':
-    m = bf.get_mouse()
-    if 'fn' in m:
-      m['fn'] = m['fn'].name.lower()
-    return ct, m
-  elif ct == 'keyboard':
-    m = bf.get_keyboard()
-    if 'modifier' in m:
-      m['modifier'] = [x.name.lower() for x in list(m['modifier'])]
-    return ct, m
-  elif ct == 'macro':
-    m = bf.get_macro()
-    if 'mode' in m:
-      m['mode'] = m['mode'].name.lower()
-    return ct, m
-  elif ct == 'system':
-    m = bf.get_system()
-    if 'fn' in m:
-      m['fn'] = [x.name.lower() for x in list(m['fn'])]
-    return ct, m
-  elif ct == 'dpi_switch':
-    m = bf.get_dpi_switch()
-    if 'fn' in m:
-      m['fn'] = m['fn'].name.lower()
-    return ct, m
-  elif ct == 'profile_switch':
-    m = bf.get_profile_switch()
-    if 'fn' in m:
-      m['fn'] = m['fn'].name.lower()
-    if 'profile' in m:
-      m['profile'] = m['profile'].name.lower()
-    return ct, m
-  else:
-    return ct, getattr(bf, 'get_' + ct)()
 f(profile, button, hypershift)
 `, () => ({button: b, hypershift: hs}),
 `
@@ -198,18 +199,18 @@ function parseIntDefault(s: string, defaultValue: number) {
   return isNaN(num) ? defaultValue : num;
 }
 
-function toHexString(byteArray) {
+function toHexString(byteArray: number[]) {
   return Array.from(byteArray, function(byte) {
     return ('0' + (byte & 0xFF).toString(16)).slice(-2);
   }).join('')
 }
-function fromHexString(hexString) {
+function fromHexString(hexString: string) {
   if (hexString.length % 2 !== 0) {
-    hexString = hexString + '0';
+    hexString = hexString.slice(0, hexString.length - 1) + '0' + hexString.slice(hexString.length - 1, hexString.length);
   }
   const byteArray = [];
   for (let i = 0; i < hexString.length; i += 2) {
-    const byte = parseInt(hexString.substr(i, 2), 16);
+    const byte = parseInt(hexString.slice(i, i + 2), 16);
     byteArray.push(byte);
   }
   return byteArray;
