@@ -108,9 +108,17 @@ class FnKeyboardModifier(Flag):
 class FnDpiSwitch(Enum):
     NEXT = 0x01
     PREV = 0x02
-    FIXED = 0x05
+    FIXED = 0x03
+    AIM = 0x05
     NEXT_LOOP = 0x06
     PREV_LOOP = 0x07
+
+class FnProfileSwitch(Enum):
+    NEXT = 0x01
+    PREV = 0x02
+    FIXED = 0x03
+    NEXT_LOOP = 0x04
+    PREV_LOOP = 0x05
 
 class FnSystem(Flag):
     POWER_DOWN = 0x01
@@ -332,9 +340,11 @@ class ButtonFunction(ctypes.Structure):
             macro_id = struct.unpack('>H', self.get_fn_value())
             return dict(mode=mode, macro_id=macro_id)
     
-    def set_dpi_switch(self, fn, dpi=None):
+    def set_dpi_switch(self, fn, stage=None, dpi=None):
         self.fn_class = FnClass.DPI_SWITCH
         if fn == FnDpiSwitch.FIXED:
+            self.set_fn_value(struct.pack('>BB', fn.value, stage))
+        elif fn == FnDpiSwitch.AIM:
             self.set_fn_value(struct.pack('>BHH', fn.value, dpi[0], dpi[1]))
         else:
             self.set_fn_value(struct.pack('>B', fn.value))
@@ -346,20 +356,34 @@ class ButtonFunction(ctypes.Structure):
             fn, *dpi = struct.unpack('>BHH', self.get_fn_value())
             fn = FnDpiSwitch(fn)
             return dict(fn=fn, dpi=dpi)
+        elif len(self.get_fn_value()) == 2:
+            fn, stage = struct.unpack('>BB', self.get_fn_value())
+            fn = FnDpiSwitch(fn)
+            return dict(fn=fn, stage=stage)
         else:
             fn, = struct.unpack('>B', self.get_fn_value())
             fn = FnDpiSwitch(fn)
             return dict(fn=fn)
     
-    def set_profile_switch(self, fn=0x04):
+    def set_profile_switch(self, fn, profile=None):
         self.fn_class = FnClass.PROFILE_SWITCH
-        self.set_fn_value(struct.pack('>B', fn))
+        if fn == FnProfileSwitch.FIXED:
+            self.set_fn_value(struct.pack('>BB', fn.value, profile.value))
+        else:
+            self.set_fn_value(struct.pack('>B', fn.value))
         return self
     def get_profile_switch(self):
         if self.get_category() != 'profile_switch':
             raise ValueError()
-        fn, = struct.unpack('>B', self.get_fn_value())
-        return dict(fn=fn)
+        if len(self.get_fn_value()) == 2:
+            fn, profile = struct.unpack('>BB', self.get_fn_value())
+            fn = FnProfileSwitch(fn)
+            profile = Profile(profile)
+            return dict(fn=fn, profile=profile)
+        else:
+            fn, = struct.unpack('>B', self.get_fn_value())
+            fn = FnProfileSwitch(fn)
+            return dict(fn=fn)
 
     def set_system(self, fn):
         self.fn_class = FnClass.SYSTEM

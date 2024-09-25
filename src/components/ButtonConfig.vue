@@ -62,6 +62,13 @@ def f(profile, button, hypershift):
     if 'fn' in m:
       m['fn'] = m['fn'].name.lower()
     return ct, m
+  elif ct == 'profile_switch':
+    m = bf.get_profile_switch()
+    if 'fn' in m:
+      m['fn'] = m['fn'].name.lower()
+    if 'profile' in m:
+      m['profile'] = m['profile'].name.lower()
+    return ct, m
   else:
     return ct, getattr(bf, 'get_' + ct)()
 f(profile, button, hypershift)
@@ -88,6 +95,11 @@ def f(profile, button, hypershift, value):
       m['fn'] = pt.FnDpiSwitch[m['fn'].upper()]
     if 'dpi' in m:
       m['dpi'] = [int(x) for x in m['dpi']]
+  elif ct == 'profile_switch':
+    if 'fn' in m:
+      m['fn'] = pt.FnProfileSwitch[m['fn'].upper()]
+    if 'profile' in m:
+      m['profile'] = pt.Profile[m['profile'].upper()]
   bf = pt.ButtonFunction()
   getattr(bf, 'set_' + ct)(**m)
   device.set_button_function(bf,
@@ -133,6 +145,12 @@ function resetFunctionCategory(newCategory: string) {
     selectedButtonFunction.value = ['mouse', {'fn': 'left', 'double_click': false, 'turbo': null}];
   } else if (newCategory === 'keyboard') {
     selectedButtonFunction.value = ['keyboard', {'key': 0x04, 'modifier': [], 'turbo': null}];
+  } else if (newCategory === 'macro') {
+    selectedButtonFunction.value = ['macro', {'macro_id': 0x0000, mode: 'macro_fixed', times: 1}];
+  } else if (newCategory === 'dpi_switch') {
+    selectedButtonFunction.value = ['dpi_switch', {'fn': 'next_loop', dpi: [800, 800], stage: 1}];
+  } else if (newCategory === 'profile_switch') {
+    selectedButtonFunction.value = ['profile_switch', {'fn': 'next_loop'}];
   }
 }
 
@@ -144,6 +162,11 @@ function toggleKeyboardModifier(m: string) {
   } else {
     selectedButtonFunction.value[1].modifier.push(m);
   }
+}
+
+function parseIntDefault(s: string, defaultValue: number) {
+  const num = parseInt(s);
+  return isNaN(num) ? defaultValue : num;
 }
 
 </script>
@@ -165,7 +188,7 @@ function toggleKeyboardModifier(m: string) {
       </label>
     </div>
     <h2>Function</h2>
-    <div class="grid grid-cols-4 items-baseline">
+    <div class="grid grid-cols-4 items-baseline mb-4">
       <button class="btn btn-sm"
         v-for="b in functionCategoryList"
         :class="{'btn-active': selectedButtonFunction[0] === b}"
@@ -178,7 +201,7 @@ function toggleKeyboardModifier(m: string) {
     <div v-else-if="selectedButtonFunction[0] == 'mouse'">
       <div class="flex flex-row gap-4 place-items-center">
         <span>Mouse button function</span>
-        <select class="select w-full max-w-xs" v-model="selectedButtonFunction[1].fn">
+        <select class="select select-bordered w-full max-w-xs" v-model="selectedButtonFunction[1].fn">
           <option v-for="fn in fnMouse" :value="fn">{{ fn }}</option>
         </select>
       </div>
@@ -209,7 +232,7 @@ function toggleKeyboardModifier(m: string) {
         <input type="number" min="1" max="65535" class="input input-sm input-bordered w-24"
           :disabled="selectedButtonFunction[1].turbo == null"
           :value="selectedButtonFunction[1].turbo ?? 0"
-          @change="(event) => {selectedButtonFunction[1].turbo = parseInt(event.target?.value) || 200}"/>
+          @change="(event) => {selectedButtonFunction[1].turbo = parseIntDefault(event.target?.value, 200)}"/>
         <span>ms</span>
         <span>({{
           isFinite(1000 / selectedButtonFunction[1].turbo)
@@ -223,8 +246,8 @@ function toggleKeyboardModifier(m: string) {
         <span>Key: </span>
         <input type="number" min="0" max="255" class="input input-sm input-bordered w-24"
           :value="selectedButtonFunction[1].key ?? 0"
-          @change="(event) => {selectedButtonFunction[1].key = parseInt(event.target?.value) || 0x04}"/>
-        <select class="select w-full max-w-xs" v-model="selectedButtonFunction[1].key">
+          @change="(event) => {selectedButtonFunction[1].key = parseIntDefault(event.target?.value, 0x04)}"/>
+        <select class="select select-bordered w-full max-w-xs" v-model="selectedButtonFunction[1].key">
           <option v-for="[code, name] in Object.entries(hidKeyboardCode)" :value="parseInt(code)">{{ code }} {{ name }}</option>
         </select>
       </div>
@@ -236,6 +259,161 @@ function toggleKeyboardModifier(m: string) {
             @change="toggleKeyboardModifier(m)" />
           <span>{{ m }}</span>
         </label>
+      </div>
+    </div>
+    <div v-else-if="selectedButtonFunction[0] == 'macro'">
+      <div class="flex flex-row gap-4 place-items-center">
+        <span>Macro ID</span>
+        <input class="input input-sm input-bordered"
+          :value="'0x' + (selectedButtonFunction[1].macro_id ?? 0).toString(16).padStart(4, '0')"
+          @change="(event) => selectedButtonFunction[1].macro_id = parseIntDefault(event.target?.value, 0)"/>
+      </div>
+      <div class="flex flex-row gap-4 place-items-center">
+        <label class="label cursor-pointer space-x-4">
+          <input type="radio"
+            :checked="selectedButtonFunction[1].mode === 'macro_fixed'"
+            @change="selectedButtonFunction[1].mode = 'macro_fixed'" />
+          <span>Repeat for</span>
+        </label>
+        <input class="input input-sm input-bordered w-20"
+          :value="selectedButtonFunction[1].times.toString()"
+          @change="(event) => selectedButtonFunction[1].times = parseIntDefault(event.target?.value, 1)"/>
+          <span>times</span>
+      </div>
+      <div class="flex flex-row gap-4 place-items-center">
+        <label class="label cursor-pointer space-x-4">
+          <input type="radio"
+            :checked="selectedButtonFunction[1].mode === 'macro_hold'"
+            @change="selectedButtonFunction[1].mode = 'macro_hold'" />
+          <span>Hold</span>
+        </label>
+      </div>
+      <div class="flex flex-row gap-4 place-items-center">
+        <label class="label cursor-pointer space-x-4">
+          <input type="radio"
+            :checked="selectedButtonFunction[1].mode === 'macro_toggle'"
+            @change="selectedButtonFunction[1].mode = 'macro_toggle'" />
+          <span>Toggle</span>
+        </label>
+      </div>
+      <div class="flex flex-row gap-4 place-items-center">
+        <label class="label cursor-pointer space-x-4">
+          <input type="radio"
+            :checked="selectedButtonFunction[1].mode === 'macro_sequence'"
+            @change="selectedButtonFunction[1].mode = 'macro_sequence'" />
+          <span>Sequence</span>
+        </label>
+      </div>
+    </div>
+    <div v-else-if="selectedButtonFunction[0] == 'dpi_switch'">
+      <div class="flex flex-row gap-4 place-items-center">
+        <label class="label cursor-pointer space-x-4">
+          <input type="radio"
+            :checked="selectedButtonFunction[1].fn === 'next'"
+            @change="selectedButtonFunction[1].fn = 'next'" />
+          <span>Next</span>
+        </label>
+      </div>
+      <div class="flex flex-row gap-4 place-items-center">
+        <label class="label cursor-pointer space-x-4">
+          <input type="radio"
+            :checked="selectedButtonFunction[1].fn === 'prev'"
+            @change="selectedButtonFunction[1].fn = 'prev'" />
+          <span>Previous</span>
+        </label>
+      </div>
+      <div class="flex flex-row gap-4 place-items-center">
+        <label class="label cursor-pointer space-x-4">
+          <input type="radio"
+            :checked="selectedButtonFunction[1].fn === 'next_loop'"
+            @change="selectedButtonFunction[1].fn = 'next_loop'" />
+          <span>Next (Loop)</span>
+        </label>
+      </div>
+      <div class="flex flex-row gap-4 place-items-center">
+        <label class="label cursor-pointer space-x-4">
+          <input type="radio"
+            :checked="selectedButtonFunction[1].fn === 'prev_loop'"
+            @change="selectedButtonFunction[1].fn = 'prev_loop'" />
+          <span>Previous (Loop)</span>
+        </label>
+      </div>
+      <div class="flex flex-row gap-4 place-items-center">
+        <label class="label cursor-pointer space-x-4">
+          <input type="radio"
+            :checked="selectedButtonFunction[1].fn === 'fixed'"
+            @change="selectedButtonFunction[1].fn = 'fixed'; selectedButtonFunction[1].stage = selectedButtonFunction[1].stage ?? 1" />
+          <span>Set dpi to stage </span>
+        </label>
+        <input type="number" min="1" max="5" step="1" class="input input-sm input-bordered w-20"
+          :disabled="selectedButtonFunction[1].fn !== 'fixed'"
+          :value="(selectedButtonFunction[1].stage ?? 1).toString()"
+          @change="(event) => selectedButtonFunction[1].stage = parseIntDefault(event.target?.value, 1)"/>
+      </div>
+      <div class="flex flex-row gap-4 place-items-center">
+        <label class="label cursor-pointer space-x-4">
+          <input type="radio"
+            :checked="selectedButtonFunction[1].fn === 'aim'"
+            @change="selectedButtonFunction[1].fn = 'aim'; selectedButtonFunction[1].dpi = selectedButtonFunction[1].dpi ?? [800, 800]" />
+          <span>Set dpi to </span>
+        </label>
+        <span>X:</span>
+        <input type="number" min="100" max="25600" step="100" class="input input-sm input-bordered w-20"
+          :disabled="selectedButtonFunction[1].fn !== 'aim'"
+          :value="(selectedButtonFunction[1].dpi?.[0] ?? 800).toString()"
+          @change="(event) => selectedButtonFunction[1].dpi[0] = parseIntDefault(event.target?.value, 800)"/>
+        <span>Y:</span>
+        <input type="number" min="100" max="25600" step="100" class="input input-sm input-bordered w-20"
+          :disabled="selectedButtonFunction[1].fn !== 'aim'"
+          :value="(selectedButtonFunction[1].dpi?.[1] ?? 800).toString()"
+          @change="(event) => selectedButtonFunction[1].dpi[1] = parseIntDefault(event.target?.value, 800)"/>
+      </div>
+    </div>
+    <div v-else-if="selectedButtonFunction[0] == 'profile_switch'">
+      <div class="flex flex-row gap-4 place-items-center">
+        <label class="label cursor-pointer space-x-4">
+          <input type="radio"
+            :checked="selectedButtonFunction[1].fn === 'next'"
+            @change="selectedButtonFunction[1].fn = 'next'" />
+          <span>Next</span>
+        </label>
+      </div>
+      <div class="flex flex-row gap-4 place-items-center">
+        <label class="label cursor-pointer space-x-4">
+          <input type="radio"
+            :checked="selectedButtonFunction[1].fn === 'prev'"
+            @change="selectedButtonFunction[1].fn = 'prev'" />
+          <span>Previous</span>
+        </label>
+      </div>
+      <div class="flex flex-row gap-4 place-items-center">
+        <label class="label cursor-pointer space-x-4">
+          <input type="radio"
+            :checked="selectedButtonFunction[1].fn === 'next_loop'"
+            @change="selectedButtonFunction[1].fn = 'next_loop'" />
+          <span>Next (Loop)</span>
+        </label>
+      </div>
+      <div class="flex flex-row gap-4 place-items-center">
+        <label class="label cursor-pointer space-x-4">
+          <input type="radio"
+            :checked="selectedButtonFunction[1].fn === 'prev_loop'"
+            @change="selectedButtonFunction[1].fn = 'prev_loop'" />
+          <span>Previous (Loop)</span>
+        </label>
+      </div>
+      <div class="flex flex-row gap-4 place-items-center">
+        <label class="label cursor-pointer space-x-4">
+          <input type="radio"
+            :checked="selectedButtonFunction[1].fn === 'fixed'"
+            @change="selectedButtonFunction[1].fn = 'fixed'; selectedButtonFunction[1].profile = selectedButtonFunction[1].profile ?? 'white'" />
+          <span>Switch to profile </span>
+        </label>
+        <select class="select select-bordered w-full max-w-xs"
+          :disabled="selectedButtonFunction[1].fn !== 'fixed'"
+          v-model="selectedButtonFunction[1].profile">
+          <option v-for="profile in ['white', 'red', 'green', 'blue', 'cyan']" :value="profile">{{ profile }}</option>
+        </select>
       </div>
     </div>
   </div>

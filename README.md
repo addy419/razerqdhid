@@ -192,8 +192,11 @@ PACK(struct razer_report
     - 7c c2
   - 06 dpi切换
     - 长度01: 01 提高等级 02 降低等级 06 向上循环 07 向下循环
-    - 长度05：05 意义不明，也许是表示固定 dpi，接下来四个字节，分别为XY dpi
-  - 07 profile 切换 长度 01 值 04 值意义不明
+    - 长度02: 03 切换到某个等级
+    - 长度05：05 临时切换到dpi，瞄准键，接下来四个字节，分别为XY dpi
+  - 07 profile 切换 长度 01
+    - 长度01：01 下一个不循环 02 上一个不循环 04 下一个循环 05 上一个循环
+    - 长度02: 03 指定 profile
   - 09 (新发现) id=3的 system control，一个字节
   - 0a 媒体键 长度 02
     - 2个字节和 HID consumer control 的 usage code 相同
