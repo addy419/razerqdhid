@@ -244,6 +244,8 @@ class ButtonFunction(ctypes.Structure):
     def set_fn_class(self, fn_class):
         self.fn_class = fn_class
         return self
+    def get_fn_class(self):
+        return self.fn_class
     
     def set_fn_value(self, b):
         self.fn_value_length = len(b)

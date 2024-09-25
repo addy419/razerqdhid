@@ -36,7 +36,10 @@ def f(profile, button, hypershift):
     pt.Button[button.upper()],
     pt.Hypershift.ON if hypershift else pt.Hypershift.OFF,
     %p)
-  ct = bf.get_category()
+  try:
+    ct = bf.get_category()
+  except IndexError:
+    return 'custom', {'fn_class': bf._fn_class, 'fn_value': list(bf.get_fn_value())}
   if ct == 'mouse':
     m = bf.get_mouse()
     if 'fn' in m:
@@ -101,7 +104,13 @@ def f(profile, button, hypershift, value):
     if 'profile' in m:
       m['profile'] = pt.Profile[m['profile'].upper()]
   bf = pt.ButtonFunction()
-  getattr(bf, 'set_' + ct)(**m)
+  if ct == 'custom':
+    fn_class = m['fn_class']
+    fn_value = bytes(m['fn_value'])
+    bf._fn_class = fn_class
+    bf.set_fn_value(fn_value)
+  else:
+    getattr(bf, 'set_' + ct)(**m)
   device.set_button_function(bf,
     pt.Button[button.upper()],
     pt.Hypershift.ON if hypershift else pt.Hypershift.OFF,
@@ -115,7 +124,7 @@ f(profile, button, hypershift, value)
 }
 const functionCategoryList = [
   'disabled', 'mouse', 'keyboard', 'macro', 'dpi_switch', 'profile_switch',
-  'system', 'consumer', 'hypershift_toggle', 'scroll_mode_toggle'
+  'system', 'consumer', 'hypershift_toggle', 'scroll_mode_toggle', 'custom',
 ];
 
 const selectedButtonFunction = computed({
@@ -159,6 +168,8 @@ function resetFunctionCategory(newCategory: string) {
     selectedButtonFunction.value = ['hypershift_toggle', {'fn': 1}];
   } else if (newCategory === 'scroll_mode_toggle') {
     selectedButtonFunction.value = ['scroll_mode_toggle', {'fn': 1}];
+  } else if (newCategory === 'custom') {
+    selectedButtonFunction.value = ['custom', {'fn_class': 0, 'fn_value': []}];
   }
 }
 
@@ -185,6 +196,23 @@ function toggleSystemFn(m: string) {
 function parseIntDefault(s: string, defaultValue: number) {
   const num = parseInt(s);
   return isNaN(num) ? defaultValue : num;
+}
+
+function toHexString(byteArray) {
+  return Array.from(byteArray, function(byte) {
+    return ('0' + (byte & 0xFF).toString(16)).slice(-2);
+  }).join('')
+}
+function fromHexString(hexString) {
+  if (hexString.length % 2 !== 0) {
+    hexString = hexString + '0';
+  }
+  const byteArray = [];
+  for (let i = 0; i < hexString.length; i += 2) {
+    const byte = parseInt(hexString.substr(i, 2), 16);
+    byteArray.push(byte);
+  }
+  return byteArray;
 }
 
 </script>
@@ -458,6 +486,20 @@ function parseIntDefault(s: string, defaultValue: number) {
     <div v-else-if="selectedButtonFunction[0] == 'hypershift_toggle'">
     </div>
     <div v-else-if="selectedButtonFunction[0] == 'scroll_mode_toggle'">
+    </div>
+    <div v-else-if="selectedButtonFunction[0] == 'custom'">
+      <div class="flex flex-row gap-4 place-items-center">
+        <span>class: </span>
+        <input type="number" min="0" max="255" class="input input-sm input-bordered w-24"
+          :value="selectedButtonFunction[1].fn_class ?? 0"
+          @change="(event) => {selectedButtonFunction[1].fn_class = parseIntDefault(event.target?.value, 0)}"/>
+      </div>
+      <div class="flex flex-row gap-4 place-items-center">
+        <span>value: </span>
+        <input type="text" class="input input-sm input-bordered"
+          :value="toHexString(selectedButtonFunction[1].fn_value)"
+          @change="(event) => {selectedButtonFunction[1].fn_value = fromHexString(event.target?.value)}"/>
+      </div>
     </div>
   </div>
 </template>
