@@ -6,6 +6,7 @@ import BasicConfig from './BasicConfig.vue';
 import type { RunPython } from '../main';
 import ProfileConfig from './ProfileConfig.vue';
 import ButtonConfig from './ButtonConfig.vue';
+import MacroConfig from './MacroConfig.vue';
 const allProfileList = ['direct', 'white', 'red', 'green', 'blue', 'cyan'];
 const runPython = inject<Ref<RunPython | null>>('runPython');
 const activeProfile = ref('direct');
@@ -25,10 +26,12 @@ function updateHasProfileList(value: string[]) {
 const profileConfigData = ref({
   basic: {},
   button: {},
+  macro: {},
 });
 const profileConfigStatus = ref({
   basic: {},
   button: {},
+  macro: {},
 });
 const isConfigAllIdle = computed(() => {
   for (let [sectionName, sectionValue] of Object.entries(profileConfigStatus.value)) {
@@ -60,6 +63,7 @@ const enableAllConfigSections = ref(false);
     <div class="join join-vertical">
       <button class="btn join-item" :class="{'btn-active': activeTab === 'basic'}" @click="activeTab = 'basic'; refreshKey++; ">Basic</button>
       <button class="btn join-item" :class="{'btn-active': activeTab === 'button'}" @click="activeTab = 'button'; refreshKey++; ">Button</button>
+      <button class="btn join-item" :class="{'btn-active': activeTab === 'macro'}" @click="activeTab = 'macro'; refreshKey++; ">Macro</button>
       <button class="btn join-item" :class="{'btn-active': activeTab === 'profile'}" @click="activeTab = 'profile'; refreshKey++; ">Profile</button>
       <button class="btn join-item" :class="{'btn-active': activeTab === 'info'}" @click="activeTab = 'info'; refreshKey++; ">Info</button>
     </div>
@@ -74,6 +78,9 @@ const enableAllConfigSections = ref(false);
             <ButtonConfig v-if="activeTab === 'button' || enableAllConfigSections" v-show="!enableAllConfigSections"
               :key="refreshKey" :py="runPython" :active-profile="activeProfile" hard
               v-model:bridge-data="profileConfigData.button" v-model:bridge-status="profileConfigStatus.button"/>
+            <MacroConfig v-if="activeTab === 'macro' || enableAllConfigSections" v-show="!enableAllConfigSections"
+              :key="refreshKey" :py="runPython" :active-profile="activeProfile" hard
+              v-model:bridge-data="profileConfigData.macro" v-model:bridge-status="profileConfigStatus.macro"/>
             <MouseInfo v-if="activeTab === 'info'"
               :key="refreshKey" :py="runPython" />
             <!-- v-show is used to load available profiles when initially loaded -->

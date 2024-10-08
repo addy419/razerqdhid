@@ -1,5 +1,5 @@
 import ctypes
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum, Flag
 import struct
 
@@ -138,6 +138,7 @@ class LiftConfig(Enum):
     CALIB2 = 0x0600
 
 class MacroOpClass(Enum):
+    NOOP = 0x00
     KEYBOARD_DOWN = 0x01
     KEYBOARD_UP = 0x02
     SYSTEM_A = 0x03
@@ -430,8 +431,8 @@ class ButtonFunction(ctypes.Structure):
 
 @dataclass
 class MacroOp:
-    op_type: MacroOpClass
-    op_value: bytes
+    op_type: MacroOpClass = field(default=MacroOpClass.NOOP)
+    op_value: bytes = field(default=b'')
     
     MACRO_OP_VALUE_SIZE = {
         MacroOpClass.KEYBOARD_DOWN: 1,

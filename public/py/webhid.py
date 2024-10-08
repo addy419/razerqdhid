@@ -44,11 +44,11 @@ def enumerate(vid=0, pid=0):
     return devices
 
 def find_device(vid=None, pid=None, serial=None, path=None):
-    if path:
+    if path is not None:
         return path
-    elif serial:
+    elif serial is not None:
         raise ValueError('serial is not available in webhid')
-    elif vid and pid:
+    elif vid is not None and pid is not None:
         path = await_js(f'''
             for (let [i, d] of this.devices.entries()) {{
                 if (d.vendorId == {vid} && d.productId == {pid}) {{

@@ -24,7 +24,7 @@ class BasiliskV3Device(Device):
 
         if self.path is None:
             raise RuntimeError('No matching device')
-        
+        print('ok', self.path)
         self.hid_device = hid.Device(path=self.path)
     
     def close(self):
