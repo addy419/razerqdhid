@@ -222,10 +222,13 @@ function fromHexString(hexString: string) {
     <h2>Button</h2>
     <div class="flex flex-row items-baseline">
       <div class="grid grid-cols-4">
-        <button class="btn btn-sm text-xs"
+        <button class="btn text-xs flex flex-col"
           :class="{'btn-active': selectedButton === b, 'btn-warning': selectedHypershift}"
           v-for="b in buttonsLayout"
-          @click="selectedButton = b">{{ b }}</button>
+          @click="selectedButton = b">
+          <span>{{ b }}</span>
+          <span class="opacity-40">{{ buttonFunctionMap[b + (selectedHypershift ? '_hypershift' : '')].value[0] }}</span>
+        </button>
       </div>
     </div>
     <div class="flex flex-row gap-4 place-items-center">

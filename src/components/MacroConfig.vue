@@ -73,7 +73,6 @@ device.delete_macro(macro_id)
   `, {locals: {macro_id: macroId}});
 }
 
-getMacroFunction(16570).then((r) => {rr.value = r;});
 </script>
 <template>
   <div>
