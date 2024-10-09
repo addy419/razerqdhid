@@ -126,6 +126,7 @@ class FnSystem(Flag):
     WAKE_UP = 0x04
 
 class LiftConfig(Enum):
+    NONE = 0x0000
     SYM_1 = 0x0100
     SYM_2 = 0x0101
     SYM_3 = 0x0102

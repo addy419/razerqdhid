@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import ConnectDevice from './components/ConnectDevice.vue';
 import DeviceMain from './components/DeviceMain.vue';
 import LogConsole from './components/LogConsole.vue';
+import LogGlance from './components/LogGlance.vue';
 
 const hasDevice = ref(false);
 
@@ -55,7 +56,10 @@ window.addEventListener("unhandledrejection", (event) => {
   </div>
   <div class="h-96"></div>
   <footer>
-    <button class="btn btn-sm" @click="showConsole = !showConsole; if(logConsole) {logConsole.scrollToBottom()}">Console</button>
+    <div class="flex flex-row gap-2 items-baseline">
+      <button class="btn btn-sm" @click="showConsole = !showConsole; if(logConsole) {logConsole.scrollToBottom()}">Console</button>
+      <LogGlance :messages="logs"></LogGlance>
+    </div>
     <LogConsole v-show="showConsole" ref="logConsole" :messages="logs" />
   </footer>
 </template>

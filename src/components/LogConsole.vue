@@ -8,7 +8,7 @@ const props = defineProps<{
 const consoleRef = ref<HTMLElement | null>(null);
 
 const isAtBottom = (element: HTMLElement) => {
-  return element.scrollTop > (element.scrollHeight - element.offsetHeight - 100);
+  return true;
 };
 
 function scrollToBottom() {
