@@ -78,9 +78,8 @@ const enableAllConfigSections = ref(false);
             <ButtonConfig v-if="activeTab === 'button' || enableAllConfigSections" v-show="!enableAllConfigSections"
               :key="refreshKey" :py="runPython" :active-profile="activeProfile" hard
               v-model:bridge-data="profileConfigData.button" v-model:bridge-status="profileConfigStatus.button"/>
-            <MacroConfig v-if="activeTab === 'macro' || enableAllConfigSections" v-show="!enableAllConfigSections"
-              :key="refreshKey" :py="runPython" :active-profile="activeProfile" hard
-              v-model:bridge-data="profileConfigData.macro" v-model:bridge-status="profileConfigStatus.macro"/>
+            <MacroConfig v-if="activeTab === 'macro'"
+              :key="refreshKey" :py="runPython" :active-profile="activeProfile" hard/>
             <MouseInfo v-if="activeTab === 'info'"
               :key="refreshKey" :py="runPython" />
             <!-- v-show is used to load available profiles when initially loaded -->

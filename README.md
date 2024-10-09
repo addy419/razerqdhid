@@ -527,5 +527,6 @@ region id:
   - 获取的数据
   - asym lift land 设置
   - 计算的校准信息
+- 灯光设置
 
 flash 假满的时候, available 满，recycled可能还有，雷蛇软件会执行碎片整理，就是先把宏、profile信息什么的都读到电脑里，然后format storage，之后重新设置。

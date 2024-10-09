@@ -43,7 +43,7 @@ export function makeBridge(bridgeData: ModelRef<BridgeData>, bridgeStatus: Model
     };
     read();
     // if active profile changes, read
-    watch(() => props.activeProfile, read);
+    watch(() => [props.activeProfile, getLocals()], read, {deep: true});
     let lastWrite: number | null = null;
     // when self value changes, propagate to upstream and downstream
     watch(modelRef, (value) => {

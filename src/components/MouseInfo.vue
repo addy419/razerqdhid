@@ -11,7 +11,7 @@ const [_, flashTotal, flashFree, flashRecycled] = flashUsage;
 
 </script>
 <template>
-  <table><tbody>
+  <table class="table"><tbody>
     <tr><td colspan="2" class="subtitle">System</td></tr>
     <tr><td>Serial</td><td>{{ serial }}</td></tr>
     <tr><td>Firmware</td><td>{{ fwVersion }}</td></tr>

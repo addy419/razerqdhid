@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 
 import { RunPython } from '../main';
 import { BridgeData, BridgeStatus, makeBridge } from './bridge';
+import { parse, stringify } from 'yaml';
 
 const props = defineProps<{
   py: RunPython;
@@ -15,8 +16,10 @@ const bridgeStatus = defineModel<BridgeStatus>('bridgeStatus', {default: {}});
 
 const bridge = makeBridge(bridgeData, bridgeStatus, props);
 
+const dummyRefresh = ref(0);
+
 const macroList = bridge<number[]>('macroList', [],
-  'device.get_macro_list()', () => ({}),
+  'device.get_macro_list()', () => ({dummyRefresh: dummyRefresh.value}),
   '', (value) => ({}),
 );
 
@@ -73,10 +76,62 @@ device.delete_macro(macro_id)
   `, {locals: {macro_id: macroId}});
 }
 
+function parseIntDefault(s: string, defaultValue: any) {
+  const num = parseInt(s);
+  return isNaN(num) ? defaultValue : num;
+}
+
+const selectedMacroId = ref<number | null>(null);
+const macroContentInput = ref<string>('');
+const saveTargetMacroId = ref<number | null>(null);
+
+function tryDelete() {
+  if (selectedMacroId.value !== null) {
+    deleteMacro(selectedMacroId.value).then(() => {
+      dummyRefresh.value++;
+    });
+  }
+}
+
+function tryLoad() {
+  if (selectedMacroId.value !== null) {
+    const s = selectedMacroId.value;
+    getMacroFunction(selectedMacroId.value).then((r) => {
+      macroContentInput.value = stringify(r, {collectionStyle: 'flow'});
+      saveTargetMacroId.value = s;
+    })
+  }
+}
+
+function trySave() {
+  if (saveTargetMacroId.value !== null) {
+    setMacroFunction(saveTargetMacroId.value, parse(macroContentInput.value)).then(() => {
+      dummyRefresh.value++;
+    });
+  }
+}
+
 </script>
 <template>
-  <div>
-    {{ macroList }}
-    {{ rr }}
+  <div class="min-w-96">
+    <h2>Select</h2>
+    <select class="select select-bordered w-full max-w-xs" v-model="selectedMacroId">
+      <option :value="null">(none)</option>
+      <option v-for="macroId in macroList" :value="macroId">{{ '0x' + macroId.toString(16).padStart(4, '0') }}</option>
+    </select>
+    <div>
+      <button class="btn btn-primary" @click="tryLoad">Load</button>
+      <button class="btn btn-error" @click="tryDelete">Delete</button>
+    </div>
+    <textarea
+      placeholder="Macro content"
+      class="textarea textarea-bordered textarea-sm w-full h-40 my-4"
+      v-model="macroContentInput"></textarea>
+    <div class="flex flex-row gap-4 place-items-center">
+      <button class="btn btn-primary" @click="trySave">Save as id</button>
+      <input type="text" class="input input-bordered"
+        :value="saveTargetMacroId !== null ? '0x' + saveTargetMacroId.toString(16).padStart(4, '0') : ''"
+        @change="(event) => saveTargetMacroId = parseIntDefault(event.target?.value, null)" />
+    </div>
   </div>
 </template>
