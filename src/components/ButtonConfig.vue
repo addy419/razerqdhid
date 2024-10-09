@@ -257,7 +257,7 @@ function fromHexString(hexString: string) {
       </div>
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].turbo == null && !selectedButtonFunction[1].double_click"
             @change="selectedButtonFunction[1].turbo = null; selectedButtonFunction[1].double_click = false;" />
           <span>Single Click</span>
@@ -265,7 +265,7 @@ function fromHexString(hexString: string) {
       </div>
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].double_click"
             @change="selectedButtonFunction[1].turbo = null; selectedButtonFunction[1].double_click = true;" />
           <span>Double Click</span>
@@ -273,7 +273,7 @@ function fromHexString(hexString: string) {
       </div>
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].turbo != null"
             @change="selectedButtonFunction[1].turbo = 200; selectedButtonFunction[1].double_click = false;" />
           <span>Turbo</span>
@@ -320,7 +320,7 @@ function fromHexString(hexString: string) {
       </div>
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].mode === 'macro_fixed'"
             @change="selectedButtonFunction[1].mode = 'macro_fixed'" />
           <span>Repeat for</span>
@@ -332,7 +332,7 @@ function fromHexString(hexString: string) {
       </div>
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].mode === 'macro_hold'"
             @change="selectedButtonFunction[1].mode = 'macro_hold'" />
           <span>Hold</span>
@@ -340,7 +340,7 @@ function fromHexString(hexString: string) {
       </div>
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].mode === 'macro_toggle'"
             @change="selectedButtonFunction[1].mode = 'macro_toggle'" />
           <span>Toggle</span>
@@ -348,7 +348,7 @@ function fromHexString(hexString: string) {
       </div>
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].mode === 'macro_sequence'"
             @change="selectedButtonFunction[1].mode = 'macro_sequence'" />
           <span>Sequence</span>
@@ -358,7 +358,7 @@ function fromHexString(hexString: string) {
     <div v-else-if="selectedButtonFunction[0] == 'dpi_switch'">
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].fn === 'next'"
             @change="selectedButtonFunction[1].fn = 'next'" />
           <span>Next</span>
@@ -366,7 +366,7 @@ function fromHexString(hexString: string) {
       </div>
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].fn === 'prev'"
             @change="selectedButtonFunction[1].fn = 'prev'" />
           <span>Previous</span>
@@ -374,7 +374,7 @@ function fromHexString(hexString: string) {
       </div>
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].fn === 'next_loop'"
             @change="selectedButtonFunction[1].fn = 'next_loop'" />
           <span>Next (Loop)</span>
@@ -382,7 +382,7 @@ function fromHexString(hexString: string) {
       </div>
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].fn === 'prev_loop'"
             @change="selectedButtonFunction[1].fn = 'prev_loop'" />
           <span>Previous (Loop)</span>
@@ -390,7 +390,7 @@ function fromHexString(hexString: string) {
       </div>
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].fn === 'fixed'"
             @change="selectedButtonFunction[1].fn = 'fixed'; selectedButtonFunction[1].stage = selectedButtonFunction[1].stage ?? 1" />
           <span>Set dpi to stage </span>
@@ -402,7 +402,7 @@ function fromHexString(hexString: string) {
       </div>
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].fn === 'aim'"
             @change="selectedButtonFunction[1].fn = 'aim'; selectedButtonFunction[1].dpi = selectedButtonFunction[1].dpi ?? [800, 800]" />
           <span>Set dpi to </span>
@@ -422,7 +422,7 @@ function fromHexString(hexString: string) {
     <div v-else-if="selectedButtonFunction[0] == 'profile_switch'">
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].fn === 'next'"
             @change="selectedButtonFunction[1].fn = 'next'" />
           <span>Next</span>
@@ -430,7 +430,7 @@ function fromHexString(hexString: string) {
       </div>
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].fn === 'prev'"
             @change="selectedButtonFunction[1].fn = 'prev'" />
           <span>Previous</span>
@@ -438,7 +438,7 @@ function fromHexString(hexString: string) {
       </div>
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].fn === 'next_loop'"
             @change="selectedButtonFunction[1].fn = 'next_loop'" />
           <span>Next (Loop)</span>
@@ -446,7 +446,7 @@ function fromHexString(hexString: string) {
       </div>
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].fn === 'prev_loop'"
             @change="selectedButtonFunction[1].fn = 'prev_loop'" />
           <span>Previous (Loop)</span>
@@ -454,7 +454,7 @@ function fromHexString(hexString: string) {
       </div>
       <div class="flex flex-row gap-4 place-items-center">
         <label class="label cursor-pointer space-x-4">
-          <input type="radio"
+          <input type="radio" class="radio radio-sm"
             :checked="selectedButtonFunction[1].fn === 'fixed'"
             @change="selectedButtonFunction[1].fn = 'fixed'; selectedButtonFunction[1].profile = selectedButtonFunction[1].profile ?? 'white'" />
           <span>Switch to profile </span>

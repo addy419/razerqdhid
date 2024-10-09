@@ -76,6 +76,7 @@ if ("serviceWorker" in navigator) {
       function runPython(code: string, options: object) {
         if (client.state === 'idle') {
           const p = client.call(client.workerProxy.runPython, code, options, Comlink.proxy(notifyCallback));
+          console.log('python: [[' + code.trimStart().split('\n')[0] + ']]', JSON.stringify(options));
           lastRunPython = p;
           return p;
         } else {
@@ -85,6 +86,7 @@ if ("serviceWorker" in navigator) {
             }
             lastRunPython.finally(() => {
               const p = client.call(client.workerProxy.runPython, code, options, Comlink.proxy(notifyCallback));
+              console.log('python: [[' + code.trimStart().split('\n')[0] + ']]', JSON.stringify(options));
               p.then((result: any) => {
                 resolve(result);
               }).catch((error: any) => {

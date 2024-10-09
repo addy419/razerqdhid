@@ -49,5 +49,6 @@ onMounted(() => {
   width: calc(100% - 4em);
   box-sizing: border-box;
   overflow-y: auto;
+  white-space: pre-wrap;
 }
 </style>

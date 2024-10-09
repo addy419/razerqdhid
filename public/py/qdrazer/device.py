@@ -190,8 +190,8 @@ class Device:
             if i >= 20: raise pt.RazerException('resetting flash takes too long')
             i += 1
     
-    def set_sensor_state(self, use_calib):
-        self.sr_with(0x0b03, '>HB', 0x0004, int(use_calib))
+    def set_sensor_state(self, use_lift):
+        self.sr_with(0x0b03, '>HB', 0x0004, int(use_lift))
     def get_sensor_state(self):
         return bool(self.sr_with(0x0b83, '>HB', 0x0004)[0])
     
