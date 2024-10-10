@@ -9,6 +9,11 @@ import ButtonConfig from './ButtonConfig.vue';
 import MacroConfig from './MacroConfig.vue';
 import SensorConfig from './SensorConfig.vue';
 import LedConfig from './LedConfig.vue';
+
+const props = defineProps<{
+  hard?: boolean;
+}>();
+
 const allProfileList = ['direct', 'white', 'red', 'green', 'blue', 'cyan'];
 const runPython = inject<Ref<RunPython | null>>('runPython');
 const activeProfile = ref('direct');
@@ -77,23 +82,24 @@ const enableAllConfigSections = ref(false);
         <Suspense>
           <div>
             <BasicConfig v-if="activeTab === 'basic' || enableAllConfigSections" v-show="!enableAllConfigSections"
-              :key="refreshKey" :py="runPython" :active-profile="activeProfile" hard
+              :key="refreshKey" :py="runPython" :active-profile="activeProfile" :hard="hard"
               v-model:bridge-data="profileConfigData.basic" v-model:bridge-status="profileConfigStatus.basic"/>
             <ButtonConfig v-if="activeTab === 'button' || enableAllConfigSections" v-show="!enableAllConfigSections"
-              :key="refreshKey" :py="runPython" :active-profile="activeProfile" hard
+              :key="refreshKey" :py="runPython" :active-profile="activeProfile" :hard="hard"
               v-model:bridge-data="profileConfigData.button" v-model:bridge-status="profileConfigStatus.button"/>
             <LedConfig v-if="activeTab === 'led' || enableAllConfigSections" v-show="!enableAllConfigSections"
-              :key="refreshKey" :py="runPython" :active-profile="activeProfile" hard
+              :key="refreshKey" :py="runPython" :active-profile="activeProfile" :hard="hard"
               v-model:bridge-data="profileConfigData.led" v-model:bridge-status="profileConfigStatus.led"/>
             <MacroConfig v-if="activeTab === 'macro'"
-              :key="refreshKey" :py="runPython" :active-profile="activeProfile" hard/>
+              :key="refreshKey" :py="runPython" :active-profile="activeProfile" :hard="hard"/>
             <SensorConfig v-if="activeTab === 'sensor'"
-              :key="refreshKey" :py="runPython" :active-profile="activeProfile" hard/>
-            <MouseInfo v-if="activeTab === 'info'"
-              :key="refreshKey" :py="runPython" />
+              :key="refreshKey" :py="runPython" :active-profile="activeProfile" :hard="hard"/>
+            <MouseInfo v-if="activeTab === 'info' && hard"
+              :key="refreshKey" :py="runPython"/>
+            <div v-if="activeTab === 'info' && !hard">No hardware connected</div>
             <!-- v-show is used to load available profiles when initially loaded -->
             <ProfileConfig v-show="activeTab === 'profile'"
-              :key="refreshKey" :py="runPython" @update="updateHasProfileList"
+              :key="refreshKey" :py="runPython" :hard="hard" @update="updateHasProfileList"
               :is-config-all-idle="isConfigAllIdle"
               v-model:profile-config-data="profileConfigData" v-model:enable-all-config-sections="enableAllConfigSections"/>
           </div>

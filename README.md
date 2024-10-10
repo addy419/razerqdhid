@@ -8,7 +8,7 @@
 ## 使用方法
 
 下载 [libusb/hidapi](https://github.com/libusb/hidapi)，放到 Python 可以加载的位置。使用 pip 安装 <https://pypi.org/project/hid/>。
-目前，还没有界面，方法实现在 qdrazer 中。
+或者使用 GUI 界面
 
 ## 协议
 
@@ -530,3 +530,65 @@ region id:
 - 灯光设置
 
 flash 假满的时候, available 满，recycled可能还有，雷蛇软件会执行碎片整理，就是先把宏、profile信息什么的都读到电脑里，然后format storage，之后重新设置。
+
+## 雷蛇默认设置
+
+{
+  basic:
+    {
+      scrollMode: tactile,
+      scrollAcceleration: false,
+      scrollSmartReel: false,
+      pollingRate: 1,
+      dpiXy: [ 1600, 1600 ],
+      dpiStages:
+        [
+          [
+              [ 400, 400 ],
+              [ 800, 800 ],
+              [ 1600, 1600 ],
+              [ 3200, 3200 ],
+              [ 6400, 6400 ]
+            ],
+          3
+        ]
+    },
+  button:
+    {
+      aim_hypershift: [ dpi_switch, { fn: aim, dpi: [ 400, 400 ] } ],
+      left_hypershift: [ mouse, { fn: left, double_click: false } ],
+      middle_hypershift: [ mouse, { fn: middle, double_click: false } ],
+      right_hypershift: [ mouse, { fn: right, double_click: false } ],
+      forward_hypershift: [ mouse, { fn: forward, double_click: false } ],
+      wheel_up_hypershift: [ mouse, { fn: wheel_up, double_click: false } ],
+      middle_forward_hypershift: [ scroll_mode_toggle, { fn: 1 } ],
+      wheel_left_hypershift: [ mouse, { fn: wheel_left, turbo: 20 } ],
+      backward_hypershift: [ mouse, { fn: backward, double_click: false } ],
+      wheel_down_hypershift: [ mouse, { fn: wheel_down, double_click: false } ],
+      middle_backward_hypershift: [ dpi_switch, { fn: next_loop } ],
+      wheel_right_hypershift: [ mouse, { fn: wheel_right, turbo: 20 } ],
+      bottom_hypershift: [ profile_switch, { fn: next_loop } ],
+      aim: [ macro, { mode: macro_fixed, macro_id: 0, times: 1 } ],
+      left: [ mouse, { fn: left, double_click: false } ],
+      middle: [ mouse, { fn: middle, double_click: false } ],
+      right: [ mouse, { fn: right, double_click: false } ],
+      forward: [ mouse, { fn: forward, double_click: false } ],
+      wheel_up: [ mouse, { fn: wheel_up, double_click: false } ],
+      middle_forward: [ scroll_mode_toggle, { fn: 1 } ],
+      wheel_left: [ mouse, { fn: wheel_left, turbo: 20 } ],
+      backward: [ mouse, { fn: backward, double_click: false } ],
+      wheel_down: [ mouse, { fn: wheel_down, double_click: false } ],
+      middle_backward: [ dpi_switch, { fn: next_loop } ],
+      wheel_right: [ mouse, { fn: wheel_right, turbo: 20 } ],
+      bottom: [ profile_switch, { fn: next_loop } ]
+    },
+  led:
+    {
+      effect_wheel: [ spectrum, 0, 0, [] ],
+      brightness_wheel: 178,
+      effect_logo: [ spectrum, 0, 0, [] ],
+      brightness_logo: 178,
+      effect_strip: [ spectrum, 0, 0, [] ],
+      brightness_strip: 178
+    }
+}

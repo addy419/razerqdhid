@@ -72,7 +72,7 @@ Comlink.expose({
       throw new Error('pyodide is not initialized');
     }
     if (pyGlobal === null) {
-      pyGlobal = pyodide.toPy({});
+      pyGlobal = pyodide.toPy({}) as PyDict;
     }
     savedSyncExtras = syncExtras;
     savedNotifyCallback = notifyCallback;
@@ -83,6 +83,7 @@ Comlink.expose({
     options.globals.set('await_js', await_js);
     options.locals = pyodide.toPy(options.locals);
     const result = await pyodide.runPythonAsync(code, options);
+    pyGlobal.set('_result', result);
     if (result && result.toJs) {
       return result.toJs({dict_converter : Object.fromEntries});
     }

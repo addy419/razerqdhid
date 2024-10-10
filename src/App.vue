@@ -5,7 +5,8 @@ import DeviceMain from './components/DeviceMain.vue';
 import LogConsole from './components/LogConsole.vue';
 import LogGlance from './components/LogGlance.vue';
 
-const hasDevice = ref(false);
+const connected = ref(false);
+const hard = ref(false);
 
 const showConsole = ref(false);
 const logConsole = ref<InstanceType<typeof LogConsole> | null>(null);
@@ -51,8 +52,8 @@ window.addEventListener("unhandledrejection", (event) => {
 
 <template>
   <div>
-    <ConnectDevice v-if="!hasDevice" @device-created="hasDevice = true" />
-    <DeviceMain v-else />
+    <ConnectDevice v-if="!connected" @device-created="connected = true; hard = true;" @device-not-created="connected = true; hard = false;"/>
+    <DeviceMain v-else :hard="hard" />
   </div>
   <div class="h-96"></div>
   <footer>

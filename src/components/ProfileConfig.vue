@@ -6,6 +6,7 @@ import { parse, stringify } from 'yaml';
 const emit = defineEmits(['update']);
 const props = defineProps<{
   py: RunPython;
+  hard?: Boolean;
   isConfigAllIdle: boolean;
 }>();
 
@@ -24,7 +25,9 @@ async function updateProfileList() {
   profileList.value = newList;
   emit('update', newList);
 }
-updateProfileList();
+if (props.hard) {
+  updateProfileList();
+}
 
 async function newProfile(profile: string) {
   await props.py('device.new_profile(pt.Profile[profile.upper()])', {locals: {profile: profile}});
@@ -39,7 +42,7 @@ async function deleteProfile(profile: string) {
 
 async function exportConfig() {
   enableAllConfigSections.value = true;
-  if (props.isConfigAllIdle){
+  if (props.hard && props.isConfigAllIdle){
     await until(() => props.isConfigAllIdle).toBe(false, {timeout: 10000, throwOnTimeout: true});
   }
   await until(() => props.isConfigAllIdle).toBe(true, {timeout: 10000, throwOnTimeout: true});
@@ -49,12 +52,12 @@ async function exportConfig() {
 
 async function importConfig() {
   enableAllConfigSections.value = true;
-  if (props.isConfigAllIdle){
+  if (props.hard && props.isConfigAllIdle){
     await until(() => props.isConfigAllIdle).toBe(false, {timeout: 10000, throwOnTimeout: true});
   }
   await until(() => props.isConfigAllIdle).toBe(true, {timeout: 10000, throwOnTimeout: true});
   profileConfigData.value = parse(profileTextData.value);
-  if (props.isConfigAllIdle){
+  if (props.hard && props.isConfigAllIdle){
     await until(() => props.isConfigAllIdle).toBe(false, {timeout: 10000, throwOnTimeout: true});
   }
   await until(() => props.isConfigAllIdle).toBe(true, {timeout: 10000, throwOnTimeout: true});
@@ -65,7 +68,7 @@ async function importConfig() {
 <template>
   <div class="form-control">
     <h2>Profile</h2>
-    <div class="grid grid-rows-2 grid-flow-col">
+    <div class="grid grid-rows-2 grid-flow-col" v-if="hard">
       <template v-for="p in allProfileList">
         <span class="inline-flex justify-center items-center" :class="{'bg-info text-info-content': profileList.includes(p), 'opacity-40': !profileList.includes(p)}">
           <span>{{ p }}</span>

@@ -26,7 +26,7 @@ const indices = computed(() => {
           :class="{
             'bg-warn text-warn-content': messages[i][1].match(/\bwarn\b|\bwarning\b/ig),
             'bg-error text-error-content': messages[i][1].match(/\berror\b/ig),
-            'bg-info text-info-content': i == msgLen - 1,
+            'bg-info text-info-content': i == msgLen - 1 && !messages[i][1].match(/\berror\b/ig),
             'transition-colors': i < msgLen - 1
           }">{{ messages[i][1].slice(0, 2) }}</span>
       </span>

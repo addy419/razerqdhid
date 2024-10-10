@@ -4,6 +4,7 @@ import { computed, ref } from 'vue';
 import { RunPython } from '../main';
 import { BridgeData, BridgeStatus, makeBridge } from './bridge';
 import { hidConsumerCode, hidKeyboardCode } from './hidcode';
+import { fromHexString, toHexString } from './hexString';
 
 const props = defineProps<{
   py: RunPython;
@@ -29,7 +30,7 @@ const selectedHypershift = ref(false);
 const buttonFunctionMap: any = {};
 for (let hs of [true, false]) {
   for (let b of buttonsLayout) {
-    buttonFunctionMap[b + (hs ? '_hypershift' : '')] = bridge(b + (hs ? '_hypershift' : ''), ['', {}],
+    buttonFunctionMap[b + (hs ? '_hypershift' : '')] = bridge(b + (hs ? '_hypershift' : ''), ['disabled', {}],
 `
 def f(profile, button, hypershift):
   import struct
@@ -197,23 +198,6 @@ function toggleSystemFn(m: string) {
 function parseIntDefault(s: string, defaultValue: number) {
   const num = parseInt(s);
   return isNaN(num) ? defaultValue : num;
-}
-
-function toHexString(byteArray: number[]) {
-  return Array.from(byteArray, function(byte) {
-    return ('0' + (byte & 0xFF).toString(16)).slice(-2);
-  }).join('')
-}
-function fromHexString(hexString: string) {
-  if (hexString.length % 2 !== 0) {
-    hexString = hexString.slice(0, hexString.length - 1) + '0' + hexString.slice(hexString.length - 1, hexString.length);
-  }
-  const byteArray = [];
-  for (let i = 0; i < hexString.length; i += 2) {
-    const byte = parseInt(hexString.slice(i, i + 2), 16);
-    byteArray.push(byte);
-  }
-  return byteArray;
 }
 
 </script>

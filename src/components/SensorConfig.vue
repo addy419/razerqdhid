@@ -34,7 +34,9 @@ function startCalibration() {
 }
 
 function stopCalibration() {
-  props.py('device.set_sensor_calibration(True); device.set_sensor_state(False); device.set_device_mode(pt.DeviceMode.NORMAL)');
+  if (props.hard) {
+    props.py('device.set_sensor_calibration(True); device.set_sensor_state(False); device.set_device_mode(pt.DeviceMode.NORMAL)');
+  }
 }
 
 const retrCalib = ref<number[]>([]);
@@ -81,7 +83,7 @@ function setParams() {
 <template>
   <div class="min-w-[30em] flex flex-col gap-2" @keydown.s="stopCalibration">
     <h2>Sensor config</h2>
-    <div class="grid gap-4 w-full place-items-center" style="grid-template-columns: repeat(4, max-content);">
+    <div class="grid gap-4 w-full place-items-center" style="grid-template-columns: repeat(4, max-content);" v-if="hard">
       <span>Smart</span>
       <label class="label cursor-pointer space-x-4">
         <input type="radio" class="radio radio-sm" v-model="liftMode" value="sym_1"/>
@@ -131,11 +133,11 @@ function setParams() {
       <label class="label cursor-pointer space-x-4">
       </label>
     </div>
-    <div>
+    <div v-if="hard">
       <button class="btn btn-primary" @click="startCalibration">Start calibration</button>
       <button class="btn btn-error" @click="stopCalibration">Stop</button>
     </div>
-    <div>
+    <div v-if="hard">
       Alternatively, press "S" to stop
     </div>
     <span>Retrieved calib data</span>
@@ -143,7 +145,7 @@ function setParams() {
       <input class="input input-bordered input-sm"
         :value="JSON.stringify(retrCalib)"
         @change="(event) => retrCalib = JSON.parse(event.target?.value)"/>
-      <button class="btn " @click="py('list(device.get_sensor_lift_config())').then((r) => {retrCalib = r;})">From Calib</button>
+      <button class="btn " v-if="hard" @click="py('list(device.get_sensor_lift_config())').then((r) => {retrCalib = r;})">From Calib</button>
       <button class="btn " @click="retrCalib = [0x30, 0x0d, 0x20, 0x02]">Razer</button>
       </div>
     <div>Calculate parameter with</div>
@@ -175,7 +177,7 @@ function setParams() {
         :value="JSON.stringify(paramB)"
         @change="(event) => paramB = JSON.parse(event.target?.value)"/>
     </div>
-    <button class="btn" @click="setParams">Set params</button>
+    <button class="btn" @click="setParams" v-if="hard">Set params</button>
 
   </div>
 </template>

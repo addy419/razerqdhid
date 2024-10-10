@@ -11,7 +11,10 @@ export default defineConfig({
       filename: 'service-worker.ts',
     }),
   ],
-  base: '/foo/',
+  base: '/razerqdhid/',
+  worker: {
+    format: "es"
+  },
   resolve: {
     alias: [
       { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
