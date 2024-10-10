@@ -68,8 +68,8 @@ async function setCustomVidPid() {
       <div>
         <div>Do not change this if you don't know what you are doing</div>
         <div>It may damage your hardware if it's not a Basilisk V3</div>
-        <div>VID: <input type="text" class="input input-bordered input-sm" v-model.number.lazy="customVid"/></div>
-        <div>PID: <input type="text" class="input input-bordered input-sm" v-model.number.lazy="customPid"/></div>
+        <div>VID: <input type="text" class="input input-bordered input-sm" @change="(event) => customVid = parseInt(event.target?.value) ?? 0"/></div>
+        <div>PID: <input type="text" class="input input-bordered input-sm" @change="(event) => customPid = parseInt(event.target?.value) ?? 0"/></div>
         <button class="btn btn-sm btn-error" @click="setCustomVidPid">Set</button>
       </div>
     </details>

@@ -77,6 +77,8 @@ Comlink.expose({
     savedSyncExtras = syncExtras;
     savedNotifyCallback = notifyCallback;
     options = options ?? {};
+    const repr = options.repr;
+    delete options.repr;
     options.globals = pyodide.toPy(options.globals) ?? pyGlobal;
     options.globals.set('syncExtras', syncExtras);
     options.globals.set('notifyCallback', notifyCallback);
@@ -84,6 +86,9 @@ Comlink.expose({
     options.locals = pyodide.toPy(options.locals);
     const result = await pyodide.runPythonAsync(code, options);
     pyGlobal.set('_result', result);
+    if (repr) {
+      return pyodide.runPython('repr(result)', {locals: pyodide.toPy({result: result})});
+    }
     if (result && result.toJs) {
       return result.toJs({dict_converter : Object.fromEntries});
     }

@@ -9,8 +9,7 @@ const pythonCode = ref('device.get_serial()');
 const pythonResponse = ref('');
 
 async function userRunPython() {
-  await props.py(pythonCode.value);
-  pythonResponse.value = await props.py('repr(_result)');
+  pythonResponse.value = await props.py(pythonCode.value, {repr: true});
 }
 
 </script>
