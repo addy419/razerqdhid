@@ -4,6 +4,9 @@ import type { Ref } from 'vue';
 import PythonRunner from './PythonRunner.vue';
 const emit = defineEmits(['deviceCreated', 'deviceNotCreated']);
 const runPython = inject<Ref<Function | null>>('runPython');
+
+const customPath = ref(null);
+
 async function requestDevice(){
   if (!runPython?.value) {
     return;
@@ -12,7 +15,7 @@ async function requestDevice(){
     import hid
     hid.set_await_js(await_js)
     from basilisk_v3.device import BasiliskV3Device
-    original_sr_with = BasiliskV3Device.sr_with
+    globals()['original_sr_with'] = BasiliskV3Device.sr_with
     def sr_with(self, *args, **kwargs):
         print(f's: {hex(args[0])} {args[1:]}, {kwargs}')
         r = original_sr_with(self, *args, **kwargs)
@@ -21,9 +24,11 @@ async function requestDevice(){
     BasiliskV3Device.sr_with = sr_with
     import qdrazer.protocol as pt
     device = BasiliskV3Device()
-    device.connect()
+    if custom_path is not None:
+      hid.enumerate()
+    device.connect(path=custom_path)
     print('device created', device.get_serial())
-  `);
+  `, {add: {custom_path: customPath.value}});
   emit('deviceCreated');
 }
 async function noHardwareMode(){
@@ -71,6 +76,7 @@ async function setCustomVidPid() {
         <div>VID: <input type="text" class="input input-bordered input-sm" @change="(event) => customVid = parseInt(event.target?.value) ?? 0"/></div>
         <div>PID: <input type="text" class="input input-bordered input-sm" @change="(event) => customPid = parseInt(event.target?.value) ?? 0"/></div>
         <button class="btn btn-sm btn-error" @click="setCustomVidPid">Set</button>
+        <div>Custom path: <input type="text" class="input input-bordered input-sm" @change="(event) => customPath = JSON.parse(event.target?.value)"/></div>
       </div>
     </details>
   </div>

@@ -79,7 +79,12 @@ Comlink.expose({
     options = options ?? {};
     const repr = options.repr;
     delete options.repr;
+    const add = options.add;
+    delete options.add;
     options.globals = pyodide.toPy(options.globals) ?? pyGlobal;
+    if (add) {
+      options.globals.update(pyodide.toPy(add));
+    }
     options.globals.set('syncExtras', syncExtras);
     options.globals.set('notifyCallback', notifyCallback);
     options.globals.set('await_js', await_js);
