@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import type { RunPython } from '../main';
 import { until } from '@vueuse/core';
+import { parse, stringify } from 'yaml';
 const emit = defineEmits(['update']);
 const props = defineProps<{
   py: RunPython;
@@ -42,7 +43,21 @@ async function exportConfig() {
     await until(() => props.isConfigAllIdle).toBe(false, {timeout: 10000, throwOnTimeout: true});
   }
   await until(() => props.isConfigAllIdle).toBe(true, {timeout: 10000, throwOnTimeout: true});
-  profileTextData.value = JSON.stringify(profileConfigData.value);
+  profileTextData.value = stringify(profileConfigData.value, {collectionStyle: 'flow'});
+  enableAllConfigSections.value = false;
+}
+
+async function importConfig() {
+  enableAllConfigSections.value = true;
+  if (props.isConfigAllIdle){
+    await until(() => props.isConfigAllIdle).toBe(false, {timeout: 10000, throwOnTimeout: true});
+  }
+  await until(() => props.isConfigAllIdle).toBe(true, {timeout: 10000, throwOnTimeout: true});
+  profileConfigData.value = parse(profileTextData.value);
+  if (props.isConfigAllIdle){
+    await until(() => props.isConfigAllIdle).toBe(false, {timeout: 10000, throwOnTimeout: true});
+  }
+  await until(() => props.isConfigAllIdle).toBe(true, {timeout: 10000, throwOnTimeout: true});
   enableAllConfigSections.value = false;
 }
 
@@ -71,6 +86,9 @@ async function exportConfig() {
       placeholder="Profile text data"
       class="textarea textarea-bordered textarea-sm w-full h-40 my-4"
       v-model="profileTextData"></textarea>
-    <button @click="exportConfig">Export config</button>
+    <div class="flex flex-row w-full gap-4">
+      <button class="btn flex-1" @click="exportConfig">Export config</button>
+      <button class="btn flex-1" @click="importConfig">Import config</button>
+    </div>
   </div>
 </template>

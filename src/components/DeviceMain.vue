@@ -66,9 +66,9 @@ const enableAllConfigSections = ref(false);
       <button class="btn join-item" :class="{'btn-active': activeTab === 'basic'}" @click="activeTab = 'basic'; refreshKey++; ">Basic</button>
       <button class="btn join-item" :class="{'btn-active': activeTab === 'button'}" @click="activeTab = 'button'; refreshKey++; ">Button</button>
       <button class="btn join-item" :class="{'btn-active': activeTab === 'led'}" @click="activeTab = 'led'; refreshKey++; ">LED</button>
+      <button class="btn join-item" :class="{'btn-active': activeTab === 'profile'}" @click="activeTab = 'profile'; refreshKey++; ">Profile</button>
       <button class="btn join-item" :class="{'btn-active': activeTab === 'macro'}" @click="activeTab = 'macro'; refreshKey++; ">Macro</button>
       <button class="btn join-item" :class="{'btn-active': activeTab === 'sensor'}" @click="activeTab = 'sensor'; refreshKey++; ">Sensor</button>
-      <button class="btn join-item" :class="{'btn-active': activeTab === 'profile'}" @click="activeTab = 'profile'; refreshKey++; ">Profile</button>
       <button class="btn join-item" :class="{'btn-active': activeTab === 'info'}" @click="activeTab = 'info'; refreshKey++; ">Info</button>
     </div>
     <div class="w-md p-2">

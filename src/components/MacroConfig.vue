@@ -111,6 +111,27 @@ function trySave() {
   }
 }
 
+const allMacros = ref<string>('');
+async function exportMacros() {
+  const allMacrosMap: {[key: string]: any} = {};
+  for (let macroId of macroList.value) {
+    allMacrosMap[macroId] = await getMacroFunction(macroId);
+  }
+  allMacros.value = stringify(allMacrosMap, {collectionStyle: 'flow'});
+}
+
+async function importMacros() {
+  const allMacrosMap = parse(allMacros.value);
+  for (let [macroId, macroFunction] of Object.entries(allMacrosMap)) {
+    if (isNaN(parseInt(macroId))) {
+      console.warn(`imported data contains invalid macro id: ${macroId}`);
+      continue;
+    }
+    await setMacroFunction(parseInt(macroId), macroFunction);
+  }
+  dummyRefresh.value++;
+}
+
 </script>
 <template>
   <div class="min-w-96">
@@ -132,6 +153,14 @@ function trySave() {
       <input type="text" class="input input-bordered"
         :value="saveTargetMacroId !== null ? '0x' + saveTargetMacroId.toString(16).padStart(4, '0') : ''"
         @change="(event) => saveTargetMacroId = parseIntDefault(event.target?.value, null)" />
+    </div>
+    <textarea
+      placeholder="All Macros"
+      class="textarea textarea-bordered textarea-sm w-full h-40 my-4"
+      v-model="allMacros"></textarea>
+    <div class="flex flex-row w-full gap-4">
+      <button class="btn flex-1" @click="exportMacros">Export</button>
+      <button class="btn flex-1" @click="importMacros">Import</button>
     </div>
   </div>
 </template>
