@@ -21,7 +21,7 @@ export function makeBridge(bridgeData: ModelRef<BridgeData>, bridgeStatus: Model
     // the following watch is for updating self value when outer (upstream) value changes
     if (name) {
       watch(() => bridgeData.value[name], (value) => {
-        if (noUpdateOnce) { noUpdateOnce = true; return; }
+        if (noUpdateOnce) { noUpdateOnce = false; return; }
         modelRef.value = value;
       }, {deep: true});
     }

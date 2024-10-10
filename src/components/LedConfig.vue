@@ -99,7 +99,7 @@ function applyToAll() {
     <label class="flex flex-row gap-4 content-baseline">
       <input type="radio" class="radio"
         :checked="selectedRegionEffect[0] === 'spectrum'"
-        @change="selectedRegionEffect = ['spectrum', 0, 180, []]"/>
+        @change="selectedRegionEffect = ['spectrum', 1, 180, []]"/>
       <span>Spectrum</span>
     </label>
     <label class="flex flex-row gap-4 content-baseline">

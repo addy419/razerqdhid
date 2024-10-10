@@ -62,9 +62,10 @@ async function setCustomVidPid() {
 </script>
 <template>
   <div class="w-min-[30em] *:my-2">
-    <h1>Razer Basilisk V3 Tools</h1>
+    <h1>Razer Basilisk V3 Onboard Memory Tools</h1>
     <div>Browser must support WebHID to work, Click request and select device</div>
-    <div>You browser <span v-if="hasHid()">probably supports WebHID</span><span v-else>does not support WebHID</span></div>
+    <div>Select Razer Basilisk V3 or (1532:0099)</div>
+    <div><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebHID_API#browser_compatibility" class="link">You browser</a> <span class="bg-success text-success-content" v-if="hasHid()">probably supports WebHID</span><span class="bg-error text-error-content" v-else>does not support WebHID</span></div>
     <button class="btn btn-primary block w-96" @click="requestDevice">Request</button>
     <button class="btn block w-96" @click="noHardwareMode">No hardware mode</button>
     <PythonRunner :py="runPython ?? (() => null)" />
