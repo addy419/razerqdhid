@@ -39,6 +39,7 @@ def enumerate(vid=0, pid=0):
             }
             new_devices.push(dd);
         }
+        console.log('selected devices', JSON.stringify(new_devices));
         return new_devices;
     ''').to_py()
     return devices

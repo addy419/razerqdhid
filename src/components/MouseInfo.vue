@@ -39,14 +39,6 @@ list(a + b)
   sendResponse.value = resp;
 }
 
-const pythonCode = ref('device.get_serial()');
-const pythonResponse = ref('');
-
-async function userRunPython() {
-  await props.py(pythonCode.value);
-  pythonResponse.value = await props.py('repr(_result)');
-}
-
 </script>
 <template>
   <div class="min-w-[30em] *:my-2">
@@ -104,19 +96,6 @@ async function userRunPython() {
         <span>Response</span>
         <textarea class="textarea textarea-bordered w-full"
           :value="toHexString(sendResponse)"
-          readonly
-        ></textarea>
-      </div>
-    </details>
-    <details>
-      <summary>Run python code</summary>
-      <div class="flex flex-col gap-2">
-        <textarea class="textarea textarea-bordered w-full font-mono"
-          v-model="pythonCode"
-        ></textarea>
-        <button class="btn btn-sm w-full block col-span-2" @click="userRunPython">Run</button>
-        <textarea class="textarea textarea-bordered w-full"
-          :value="pythonResponse"
           readonly
         ></textarea>
       </div>

@@ -9,6 +9,7 @@ import ButtonConfig from './ButtonConfig.vue';
 import MacroConfig from './MacroConfig.vue';
 import SensorConfig from './SensorConfig.vue';
 import LedConfig from './LedConfig.vue';
+import PythonRunner from './PythonRunner.vue';
 
 const props = defineProps<{
   hard?: boolean;
@@ -97,6 +98,7 @@ const enableAllConfigSections = ref(false);
             <MouseInfo v-if="activeTab === 'info' && hard"
               :key="refreshKey" :py="runPython"/>
             <div v-if="activeTab === 'info' && !hard">No hardware connected</div>
+            <PythonRunner v-if="activeTab === 'info'" :py="runPython" />
             <!-- v-show is used to load available profiles when initially loaded -->
             <ProfileConfig v-show="activeTab === 'profile'"
               :key="refreshKey" :py="runPython" :hard="hard" @update="updateHasProfileList"

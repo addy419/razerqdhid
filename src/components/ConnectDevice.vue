@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { inject } from 'vue';
+import { ref, inject } from 'vue';
 import type { Ref } from 'vue';
+import PythonRunner from './PythonRunner.vue';
 const emit = defineEmits(['deviceCreated', 'deviceNotCreated']);
 const runPython = inject<Ref<Function | null>>('runPython');
 async function requestDevice(){
@@ -41,6 +42,18 @@ async function noHardwareMode(){
 function hasHid(){
   return new Boolean(navigator.hid);
 }
+
+const customVid = ref(0);
+const customPid = ref(0);
+
+async function setCustomVidPid() {
+  await runPython.value(`
+    from basilisk_v3.device import BasiliskV3Device
+    BasiliskV3Device.vid = int(vid)
+    BasiliskV3Device.pid = int(pid)
+  `, {locals: {vid: customVid.value, pid: customPid.value}});
+}
+
 </script>
 <template>
   <div class="w-min-[30em] *:my-2">
@@ -49,5 +62,16 @@ function hasHid(){
     <div>You browser <span v-if="hasHid()">probably supports WebHID</span><span v-else>does not support WebHID</span></div>
     <button class="btn btn-primary block w-96" @click="requestDevice">Request</button>
     <button class="btn block w-96" @click="noHardwareMode">No hardware mode</button>
+    <PythonRunner :py="runPython ?? (() => null)" />
+    <details>
+      <summary class="opacity-30">Custom VID/PID</summary>
+      <div>
+        <div>Do not change this if you don't know what you are doing</div>
+        <div>It may damage your hardware if it's not a Basilisk V3</div>
+        <div>VID: <input type="text" class="input input-bordered input-sm" v-model.number.lazy="customVid"/></div>
+        <div>PID: <input type="text" class="input input-bordered input-sm" v-model.number.lazy="customPid"/></div>
+        <button class="btn btn-sm btn-error" @click="setCustomVidPid">Set</button>
+      </div>
+    </details>
   </div>
 </template>
