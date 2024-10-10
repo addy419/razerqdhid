@@ -533,6 +533,7 @@ flash 假满的时候, available 满，recycled可能还有，雷蛇软件会执
 
 ## 雷蛇默认设置
 
+```yaml
 {
   basic:
     {
@@ -568,7 +569,7 @@ flash 假满的时候, available 满，recycled可能还有，雷蛇软件会执
       middle_backward_hypershift: [ dpi_switch, { fn: next_loop } ],
       wheel_right_hypershift: [ mouse, { fn: wheel_right, turbo: 20 } ],
       bottom_hypershift: [ profile_switch, { fn: next_loop } ],
-      aim: [ macro, { mode: macro_fixed, macro_id: 0, times: 1 } ],
+      aim: [ dpi_switch, { fn: aim, dpi: [ 400, 400 ] } ],
       left: [ mouse, { fn: left, double_click: false } ],
       middle: [ mouse, { fn: middle, double_click: false } ],
       right: [ mouse, { fn: right, double_click: false } ],
@@ -592,3 +593,4 @@ flash 假满的时候, available 满，recycled可能还有，雷蛇软件会执
       brightness_strip: 178
     }
 }
+```
