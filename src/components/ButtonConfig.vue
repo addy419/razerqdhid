@@ -139,8 +139,9 @@ const selectedButtonFunction = computed({
   set: (value) => {
     if (selectedHypershift.value) {
       buttonFunctionMap[selectedButton.value + '_hypershift'].value = value;
+    } else {
+      buttonFunctionMap[selectedButton.value].value = value;
     }
-    buttonFunctionMap[selectedButton.value].value = value;
   }
 });
 
