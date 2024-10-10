@@ -295,6 +295,25 @@ function parseIntDefault(s: string, defaultValue: number) {
           <span>{{ m }}</span>
         </label>
       </div>
+      <div class="flex flex-row gap-4 place-items-center">
+        <label class="label cursor-pointer space-x-4">
+          <input type="checkbox" class="checkbox checkbox-sm"
+            :checked="selectedButtonFunction[1].turbo != null"
+            @change="(event) => selectedButtonFunction[1].turbo = event.target?.checked ? 200 : null" />
+          <span>Turbo</span>
+        </label>
+        <span>Trigger every</span>
+        <input type="number" min="1" max="65535" class="input input-sm input-bordered w-24"
+          :disabled="selectedButtonFunction[1].turbo == null"
+          :value="selectedButtonFunction[1].turbo ?? 0"
+          @change="(event) => {selectedButtonFunction[1].turbo = parseIntDefault(event.target?.value, 200)}"/>
+        <span>ms</span>
+        <span>({{
+          isFinite(1000 / selectedButtonFunction[1].turbo)
+          ? (1000 / selectedButtonFunction[1].turbo).toFixed(1)
+          : '-'
+        }} times / s)</span>
+      </div>
     </div>
     <div v-else-if="selectedButtonFunction[0] == 'macro'">
       <div class="flex flex-row gap-4 place-items-center">
