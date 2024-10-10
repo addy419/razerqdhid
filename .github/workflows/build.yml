@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Download pyodide
+        run: mkdir -p ./public/pyodide && wget -O - https://github.com/pyodide/pyodide/releases/download/0.26.2/pyodide-core-0.26.2.tar.bz2 | tar -xvj -C ./public/pyodide --strip-components=1
       - name: Node.js
         uses: actions/setup-node@v3
         with:

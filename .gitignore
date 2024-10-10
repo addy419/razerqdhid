@@ -4,6 +4,8 @@ hid.py
 .py[c]
 __pycache__
 
+.vite
+
 # Logs
 logs
 *.log
