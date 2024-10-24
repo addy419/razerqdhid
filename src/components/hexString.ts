@@ -5,6 +5,8 @@ export function toHexString(byteArray: number[]) {
   }).join(' ')
 }
 export function fromHexString(hexString: string) {
+  hexString = hexString.replace(/ /g, '').replace(/\n/g, '');
+  console.log(hexString);
   if (hexString.length % 2 !== 0) {
     hexString = hexString.slice(0, hexString.length - 1) + '0' + hexString.slice(hexString.length - 1, hexString.length);
   }

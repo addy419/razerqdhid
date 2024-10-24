@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, inject } from 'vue';
+import { ref, inject, computed } from 'vue';
 import type { Ref } from 'vue';
 import PythonRunner from './PythonRunner.vue';
 const emit = defineEmits(['deviceCreated', 'deviceNotCreated']);
@@ -45,7 +45,7 @@ async function noHardwareMode(){
 }
 
 function hasHid(){
-  return new Boolean(navigator.hid);
+  return Boolean(navigator.hid);
 }
 
 const customVid = ref(0);
@@ -59,6 +59,10 @@ async function setCustomVidPid() {
   `, {locals: {vid: customVid.value, pid: customPid.value}});
 }
 
+const isPythonReady = computed(() => {
+  return Boolean(runPython?.value);
+});
+
 </script>
 <template>
   <div class="w-min-[30em] *:my-2">
@@ -66,8 +70,9 @@ async function setCustomVidPid() {
     <div>Browser must support WebHID to work, Click request and select device</div>
     <div>Select Razer Basilisk V3 or (1532:0099)</div>
     <div><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebHID_API#browser_compatibility" class="link">You browser</a> <span class="bg-success text-success-content" v-if="hasHid()">probably supports WebHID</span><span class="bg-error text-error-content" v-else>does not support WebHID</span></div>
-    <button class="btn btn-primary block w-96" @click="requestDevice">Request</button>
-    <button class="btn block w-96" @click="noHardwareMode">No hardware mode</button>
+    <button class="btn btn-primary block w-96" @click="requestDevice" :class="{'btn-disabled': !isPythonReady}">Request</button>
+    <button class="btn block w-96" @click="noHardwareMode" :class="{'btn-disabled': !isPythonReady}">No hardware mode</button>
+    <div v-if="!isPythonReady"><span class="loading loading-spinner"></span><span>Loading python</span></div>
     <PythonRunner :py="runPython ?? (() => null)" />
     <details>
       <summary class="opacity-30">Custom VID/PID</summary>
