@@ -35,4 +35,6 @@ Python 后端：位于 [py 目录](./public/py/)中，可以独立运行。
 
 The protocol and command list analyzed is [this documentation](./docs/basic.md).
 
+My native language is Chinese so it's written in Chinese. If you can't read that, you should use a web translator or maybe some ChatGPT-based document translator.
+
 分析出的协议和命令列表见[协议逆向文档](./docs/basic.md)
