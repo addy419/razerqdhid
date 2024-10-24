@@ -1,5 +1,11 @@
 name: Build and upload to Github pages
-on: [ push, pull_request ]
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+  pull_request:
+
 permissions:
   contents: read
   pages: write      # to deploy to Pages
