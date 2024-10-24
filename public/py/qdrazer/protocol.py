@@ -139,7 +139,6 @@ class LiftConfig(Enum):
     CALIB2 = 0x0600
 
 class MacroOpClass(Enum):
-    NOOP = 0x00
     KEYBOARD_DOWN = 0x01
     KEYBOARD_UP = 0x02
     SYSTEM_A = 0x03

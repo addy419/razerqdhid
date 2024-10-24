@@ -208,14 +208,14 @@ class Device:
     def get_sensor_lift_config(self):
         return self.sr_with(0x0b85, '>H8s', 0x0004)[0]
     
-    def set_sensor_lift_config_a(self, data):
+    def set_sensor_lift_config_b(self, data):
         self.sr_with(0x0b0c, '>H5s', 0x0004, data)
-    def get_sensor_lift_config_a(self):
+    def get_sensor_lift_config_b(self):
         return self.sr_with(0x0b8c, '>H5s', 0x0004)[0]
     
-    def set_sensor_lift_config_b(self, data):
+    def set_sensor_lift_config_a(self, data):
         self.sr_with(0x0b0d, '>H8s', 0x0004, data)
-    def get_sensor_lift_config_b(self):
+    def get_sensor_lift_config_a(self):
         return self.sr_with(0x0b8d, '>H8s', 0x0004)[0]
 
     def set_led_effect(self, region, effect, mode=0, speed=0, colors=None, *, profile=pt.Profile.DEFAULT):
