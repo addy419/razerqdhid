@@ -33,8 +33,8 @@ Python 后端：位于 [py 目录](./public/py/)中，可以独立运行。
 
 ## 协议逆向文档 / Reverse-engineer documentation
 
-The protocol and command list analyzed is [this documentation](./docs/basic.md).
+The protocol and command list analyzed is [this documentation](./docs/basic-en.md).
 
-My native language is Chinese so it's written in Chinese. If you can't read that, you should use a web translator or maybe some ChatGPT-based document translator.
+My native language is Chinese so it was [originally written in Chinese](./docs/basic.md) and translated to English with [豆包](https://www.doubao.com/). It may contain mistakes and bad formatting, it is advised that you can use a webpage translator and compare that version with this version, or just request me to clarify it directly in the issues section.
 
 分析出的协议和命令列表见[协议逆向文档](./docs/basic.md)
