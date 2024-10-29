@@ -1,6 +1,7 @@
 # Button Setting Command List
 
 This part of the commands involves button function binding (mapping mouse buttons to different functions).
+
 There is only one command, but the main point is how the parameters of this command represent a button function.
 
 ## get_button_function
@@ -29,16 +30,16 @@ There are 3 read parameters, all 1 byte each:
 | 0x0f                | Side aiming button                         |
 | 0x34                | Scroll wheel left                          |
 | 0x35                | Scroll wheel right                         |
-| 0x60                | Button below the scroll wheel (lower part) |
-| 0x6a                | Button below the scroll wheel (upper part) |
+| 0x60                | Button below the scroll wheel (lower one)  |
+| 0x6a                | Button below the scroll wheel (upper one)  |
 
 The data parameter represents the software function triggered after pressing the hardware button, with the specific encoding as follows:
 
 - 1 byte Function category
 - 1 byte Length of function data
 - Up to 5 bytes Function data
-  Among them, the function categories include:
-  (Macro = Macro, hereinafter collectively referred to as "Macro")
+
+The function categories include:
 
 | Function Category Number | Name                               |
 | ------------------------ | ---------------------------------- |
@@ -67,11 +68,12 @@ This category has no function data, and the length can be directly set to 0.
 
 ### Mouse Category, Double-click of Mouse
 
-The mouse category means sending mouse events after pressing the button, such as left button, right button, etc. For double-click, two press events will be continuously sent when pressed.
+The mouse category means sending mouse events after pressing the button, such as left button, right button, etc. For double-click, two press events will be sent at once when pressed.
 The data formats of the mouse category and double-click of mouse are the same, both having only one byte:
 
 - 1 byte Button value
-  The correspondence between the button value and the software button is as follows:
+
+The correspondence between the button value and the software button is as follows:
 
 | Button Value | Corresponding Mouse Button |
 | ------------ | -------------------------- |
@@ -87,11 +89,12 @@ The data formats of the mouse category and double-click of mouse are the same, b
 
 ### Multiple Clicks of Mouse
 
-The multiple clicks of mouse category means that when the button is pressed, mouse button press events will be continuously sent at a set frequency. The data format is:
+The multiple clicks of mouse (turbo) category means that when the button is pressed, mouse button press events will be continuously sent at a set frequency. The data format is:
 
 - 1 byte Button value, see the table above
 - 2 bytes Interval time
-  The interval time occupies 2 bytes, is an unsigned integer in big endian format, and the unit is milliseconds, meaning that when the hardware button is pressed, a button press event is sent every x milliseconds. The smaller the value, the faster the sending.
+
+The interval time occupies 2 bytes, is an unsigned integer in big endian format, and the unit is milliseconds, meaning that when the hardware button is pressed, a button press event is sent every x milliseconds. The smaller the value, the faster the sending.
 
 ### Keyboard Category
 
@@ -100,7 +103,8 @@ The data format is:
 
 - 1 byte Combination key value
 - 1 byte Button value
-  Among them, the combination key value includes left (Ctrl, Shift, Alt, GUI(Windows key)), and can be freely combined with a certain button. Each bit of the 8 bits of the combination key value represents a button, and multiple bits can be set to 1. Setting to 1 means pressing the button, and setting to 0 means not pressing.
+
+The combination key value includes left (Ctrl, Shift, Alt, GUI(Windows key)), and can be freely combined with a certain button. Each bit of the 8 bits of the combination key value represents a button, and multiple bits can be set to 1. Setting to 1 means pressing the button, and setting to 0 means not pressing.
 
 | Combination Key Value | Corresponding Button |
 | --------------------- | -------------------- |
@@ -126,7 +130,7 @@ This is similar to the multiple clicks of mouse in principle, but it is replaced
 
 ### System Power Control
 
-This type includes three functions: Power Down, Sleep, Wake Up. These three functions are Usage ID 0x81 - 0x83 in the HID's Generic Desktop Page and are sent by the mouse's interface 1, id 3. Generally, this function is not used. After pressing, it is equivalent to pressing the power button in my Windows system.
+This type includes three functions: Power Down, Sleep, Wake Up. These three functions are Usage ID 0x81 - 0x83 in the HID's Generic Desktop Page and are sent by the mouse's interface 1, id 3. Generally, this function is not useful. After pressing, it is equivalent to pressing the power button in my Windows system.
 The data format is:
 
 - 1 byte Button value
@@ -143,8 +147,10 @@ Send an event of any Usage ID in the Consumer Page (USB Usage page 0x0C). For ex
 The data format is:
 
 - 2 bytes Button value
-  This button value is the Usage ID of the Consumer Page and can be referred to the Consumer Page in this table:
-  <https://usb.org/sites/default/files/hut1_5.pdf>
+
+This button value is the Usage ID of the Consumer Page and can be referred to the Consumer Page in this table:
+
+<https://usb.org/sites/default/files/hut1_5.pdf>
 
 ### Macro (fixed times)
 
@@ -153,7 +159,8 @@ The data format is:
 
 - 2 bytes Macro ID
 - 1 byte Repeat times
-  Multiple macros can be saved on the Razer mouse's on-board memory, and each macro has a 2 - byte ID. Here, only the button function is pointed to the macro with that ID. What the content of the macro is is not the concern of this command. If there is no macro with that ID, the button should not be triggered, which is equivalent to being disabled.
+
+Multiple macros can be saved on the Razer mouse's on-board memory, and each macro has a 2-byte ID. Here, only the button function is pointed to the macro with that ID. What the content of the macro is is not the concern of this command. If there is no macro with that ID, the button should not be triggered, which is equivalent to being disabled.
 
 ### Macro (triggered when pressed)
 
@@ -172,7 +179,9 @@ The data format is:
 ### Macro (sequence)
 
 Each time the button is pressed, the macro corresponding to the ID triggers two operations. When pressed again, it triggers the next two operations. At the end, it loops back to the beginning. The mouse stores which operation is currently being executed.
+
 This is the "sequence" type that macros can be set to in the Razer software. A sequence has many operations, and each time the button is pressed, the next operation is executed in turn. Its internal implementation is actually that each key has a press and release operation, and when macros are stored, the press and release operations of each key are continuously stored, and then when binding buttons, it is bound to the "macro (sequence)" function category.
+
 The data format is:
 
 - 2 bytes Macro ID
@@ -180,10 +189,12 @@ The data format is:
 ### DPI Switching
 
 This category is used to switch DPI. By default, Razer binds the button relatively lower below the scroll wheel to the DPI switching key. Besides cycling through DPI, there are several other functions.
+
 The first data format is:
 
 - 1 byte Operation
-  Operation can be:
+
+Operation can be:
 
 | Button Value | Corresponding Function                                                        |
 | ------------ | ----------------------------------------------------------------------------- |
@@ -197,33 +208,41 @@ The second data format is:
 
 - 1 byte 0x03
 - 1 byte Sequence number
-  The function of this format is to switch to a certain fixed DPI level, starting from 1. For example, 0x03 0x01 is to switch to the first level.
-  The third data format is:
+
+The function of this format is to switch to a certain fixed DPI level, starting from 1. For example, 0x03 0x01 is to switch to the first level.
+
+The third data format is:
+
 - 1 byte 0x03
 - 4 bytes DPI values
-  This format is equivalent to Razer's aiming key. After pressing the button, it temporarily switches to a certain DPI and returns to the original state when released. The DPI values are 2 bytes for X and 2 bytes for Y, which are the same as the DPI values in the basic commands.
+
+This format is equivalent to Razer's aiming key. After pressing the button, it temporarily switches to a certain DPI and returns to the original state when released. The DPI values are 2 bytes for X and 2 bytes for Y, which are the same as the DPI values in the basic commands.
 
 ### Profile Switching
 
-This category is used to switch the on-board Profile (configuration scheme). By default, the button below Razer is for this function.
+This category is used to switch the on-board Profile. By default, the button below Razer is for this function.
+
 The first data format is:
 
 - 1 byte Operation
-  Operation can be:
+
+Operation can be:
 
 | Button Value | Corresponding Function                                                       |
 | ------------ | ---------------------------------------------------------------------------- |
 | 0x01         | Switch to the next Profile                                                   |
 | 0x02         | Switch to the previous Profile                                               |
-| 0x04         | Switch to the next Profile, but loop back to the start when reaching the end |
-| 0x05         | Switch nobility, but loop back to the end when reaching the front            |
+| 0x04         | Switch to the next Profile, but loop back to the start after reaching the end |
+| 0x05         | Switch to the previous Profile, but loop back to the end after reaching the front            |
 
 The second data format is:
 
 - 1 byte 0x03
 - 1 byte Profile number
-  The function is to switch to a certain fixed Profile.
-  Profile numbers are white/red/green/blue/qing, numbered 1 - 5 respectively.
+
+The function is to switch to a certain fixed Profile.
+
+Profile numbers are white/red/green/blue/cyan, numbered 1 - 5 respectively.
 
 ### Hypershift Switching
 

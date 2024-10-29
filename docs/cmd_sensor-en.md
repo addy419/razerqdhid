@@ -38,7 +38,9 @@ After entering, the mouse pointer will stop moving. Move a relatively long dista
 - Send this command with a data parameter of 1.
 
 The mouse's endpoint 2 id 5 should send 050a01, indicating that the calibration is successful, or 050a02, indicating that the calibration has failed (the moving distance is too short or not on the mouse pad).
+
 After calibration, the original calibration data obtained is retrieved using `get_sensor_lift_config`. There are 4 useful bytes of content, similar to 26 03 30 03.
+
 After calibration, the mouse is not configured yet. It is still necessary to calculate the calibration calculation value to be written using the obtained original calibration data and then write it back to the mouse. The meaning of this data and how to calculate it will be described later.
 
 ## get_sensor_lift
@@ -52,21 +54,23 @@ This is used to set whether the mouse uses a fixed lift-off distance or calibrat
 | Value  | Meaning                                                 | Corresponding sensor_state |
 | ------ | ------------------------------------------------------- | -------------------------- |
 | 0x0000 | Do not use any settings (the meaning is not very clear) | 0                          |
-| 0x0000 | Symmetric 1mm                                           | 0                          |
-| 0x0001 | Symmetric 2mm                                           | 0                          |
-| 0x0002 | Symmetric 3mm                                           | 0                          |
-| 0x0000 | Asymmetric 1 - 2mm                                      | 0                          |
-| 0x0001 | Asymmetric 1 - 3mm                                      | 0                          |
-| 0x0002 | Asymmetric 2 - 3mm                                      | 0                          |
-| 0x0003 | Symmetric Razer calibration                             | 1                          |
-| 0x0004 | Asymmetric Razer calibration                            | 1                          |
-| 0x0005 | Symmetric self-calibration                              | 1                          |
-| 0x0006 | Asymmetric self-calibration                             | 1                          |
+| 0x0100 | Symmetric 1mm                                           | 0                          |
+| 0x0101 | Symmetric 2mm                                           | 0                          |
+| 0x0102 | Symmetric 3mm                                           | 0                          |
+| 0x0200 | Asymmetric 1 - 2mm                                      | 0                          |
+| 0x0201 | Asymmetric 1 - 3mm                                      | 0                          |
+| 0x0202 | Asymmetric 2 - 3mm                                      | 0                          |
+| 0x0300 | Symmetric Razer calibration                             | 1                          |
+| 0x0400 | Asymmetric Razer calibration                            | 1                          |
+| 0x0500 | Symmetric self-calibration                              | 1                          |
+| 0x0600 | Asymmetric self-calibration                             | 1                          |
 
 ## get_sensor_lift_config
 
 | Read Command | Write Command | Read Parameter Length | Data Parameter Length |
-| ------ | ------ | 2(0x0004) | 8 |
+| ------ | ------ | ------------ | ------------ |
+| 0x0b85 | 0x0b05 | 2(0x0004) | 8 |
+
 The read and write operations of this command have different functions. The read operation is to obtain the calibration result, as described in the calibration process above.
 The write operation is used together with the two symmetric calibration schemes of 0x0300 and 0x0500 in `get_sensor_lift`. It is to write the calibration calculation values used in those two symmetric calibration schemes.
 To use a symmetric calibration scheme, first calculate the calibration calculation value using an algorithm with the calibration data and the lift value, write it using this command, and then also need to set the corresponding values using `set_sensor_lift` and `set_sensor_state`.
@@ -74,13 +78,17 @@ To use a symmetric calibration scheme, first calculate the calibration calculati
 ## get_sensor_lift_config_a
 
 | Read Command | Write Command | Read Parameter | Data Parameter Length |
-| ------ | ------ | 2(0x0004) | 8 |
+| ------ | ------ | ------------ | ------------ |
+| 0x0b8d | 0x0b0d | 2(0x0004) | 8 |
+
 This command is used to write or read the asymmetric calibration calculation value A and needs to be used with the two asymmetric calibration settings of 0x0400 and 0x0600 in `get_sensor_lift`. What exactly is the "asymmetric calibration calculation value A" is described below.
 
 ## get_sensor_lift_config_b
 
 | Read Command | Write Command | Read Parameter Length | Data Parameter Length |
-| ------ | ------ | 2(0x0004) | 5 |
+| ------ | ------ | ------------ | ------------ |
+| 0x0b8c | 0x0b0c | 2(0x0004) | 5 |
+
 This command is used to write or read the asymmetric calibration calculation value B and needs to be used with the two asymmetric calibration settings of 0x0400 and 0x0600 in `get_sensor_lift`. What exactly is the "asymmetric calibration calculation value B" is described below.
 
 ## If a fixed lift-off distance is to be used
@@ -93,7 +101,7 @@ According to my experiment, all the mouse pad calibrations provided by Razer tra
 Firstly, whether it is Razer calibration or self-calibration, an algorithm is involved:
 
 - Use the obtained original calibration data.
-- Then add the two values of lift and land.
+- Then use the two values of lift and land.
   - Lift represents the lift-off distance, and land represents the landing distance. Both have a value range of 1 - 10 and are relative values.
   - Asymmetric means two values; if it is symmetric, there is only one value.
   - These two values are the sliders from 1 to 10 in the Synapse software.
@@ -141,11 +149,15 @@ def calculate_lift_config(mouse_data, lift, land=None):
 ```
 
 The meaning of this 8-byte parameter or A and B parameters is currently unclear. However, this is how the Synapse software calculates.
+
 Then, the original calibration information of the official Razer mouse pad is equivalent to `30 0d 20 02`. Using this value and the algorithm, adding the lift and land values, the calculated data can be used for the `set_sensor_lift_config` or `_a`, `_b` versions. At the same time, also need to set `sensor_light` and the corresponding `sensor_state`.
 
 ## If self-calibration information is to be used
 
 Firstly, use the above commands to calibrate the mouse pad and obtain the original calibration data.
+
 Then, run the above algorithm to calculate and set the calibration calculation value in the same way.
+
 At the same time, also need to set `sensor_lift` and the corresponding `sensor_state`.
+
 When calibrating, if the mouse is far from the mouse pad, the first byte of the original calibration data will be smaller. The other 3 bytes have always been 03 30 03 in my tests. The current meaning is unclear, but this is how the Synapse software calculates, and I don't know the principle, and there is no data manual for this sensor PAW3399 on the Internet.

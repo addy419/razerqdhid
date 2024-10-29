@@ -1,6 +1,7 @@
 # Macro Command List
 
 The mouse stores macros in the Flash memory, which is described in detail in the "Flash Memory Management Mechanism" section of [Basic Information](./basic.md).
+
 The macros stored by the mouse are independent of profiles and are stored globally, not belonging to a certain profile. Each macro has a 2 - byte ID and also has a description and content. The description is used by the Razer software to store information such as the UUID and name of the macro. When implementing it yourself, you don't need to set it. You only need to set the 2 - byte ID and the content.
 
 ## get_macro_count
@@ -62,6 +63,7 @@ The data parameter length is "length" and can be set to 64, that is, 64 bytes ar
 ## Content Data of Macros
 
 This introduces the encoding method of macros on the Razer on - board memory, which can be written using `get_macro_function`.
+
 Firstly, the content of a macro contains several operations. The number of bytes occupied by each operation's encoding is not fixed, but each operation can be divided one by one from the front to the back. Multiple operations connected together form a macro. The operations include keyboard, mouse, delay, etc. The specific definitions are as follows:
 
 **Keyboard Keys (2 bytes long)**:
@@ -73,13 +75,15 @@ Firstly, the content of a macro contains several operations. The number of bytes
 
 - 1 byte 0x03 or 0x04, with the same function.
 - 1 byte Button value, see the document on button function binding for details, with the same definition as button binding.
-  If you want to press and release, you must first add an operation, set the value to the button to be pressed (press), and then add another one with a value of 0 (release), otherwise it will keep being pressed.
+
+If you want to press and release, you must first add an operation, set the value to the button to be pressed (press), and then add another one with a value of 0 (release), otherwise it will keep being pressed.
 
 **Consumer (3 bytes long)**:
 
 - 1 byte 0x05 or 0x06, with the same function.
 - 2 byte Button value, see the document on button function binding for details, with the same definition as button binding.
-  The precautions for pressing and releasing are the same as the previous one.
+
+The precautions for pressing and releasing are the same as the previous one.
 
 **Mouse Buttons (2 bytes long)**:
 
@@ -92,19 +96,23 @@ The button value here is different from that in button function binding, as show
 | ------------ | -------------- |
 | 0x01         | Left button    |
 | 0x02         | Right button   |
-| 0x03         | Middle button  |
+| 0x04         | Middle button  |
 | 0x08         | Back button    |
 | 0x10         | Forward button |
 
 For the operation of mouse buttons, after pressing, there must be a release operation behind, otherwise after the macro is triggered, the button will remain pressed. For example:
+
 Left button pressed and then immediately released
+
 08 01 08 00
+
 Left button pressed, right button pressed, left button released, right button released
+
 08 01 08 03 08 02 08 00
 
 **Mouse Wheel (2 bytes long)**:
 
-- 1 byte 0x08 indicates it is a mouse wheel.
+- 1 byte 0x0a indicates it is a mouse wheel.
 - 1 byte Displacement value
 
 The displacement value is a signed number, indicating the number of grids the mouse wheel has scrolled. Upward is 01, downward is ff.

@@ -1,7 +1,9 @@
 # LED Command List
 
 The LED of this mouse is divided into 3 areas: the scroll wheel, the LOGO, and the light strip below. There is 1 light for the scroll wheel and the LOGO each, and 9 lights for the light strip below.
+
 Each profile can independently save the light effect and brightness of each area. There are 3 kinds of light effects that can be saved in total: fixed, RGB cycle, and wave. In addition, there are commands that can directly set the LED color without using light effects, and the lighting effects can be achieved by software.
+
 Related commands:
 
 ## get_led_effect
@@ -11,7 +13,9 @@ Related commands:
 | 0x0f82       | 0x0f02        | 1(profile)+1(region)  | 10                    |
 
 Set the light effect of a certain area in a certain profile. The light effect and brightness are independent and can be set separately. This only sets the light effect. The light effect will be saved in the profile and can be retained after power off, and it can change automatically when switching profiles.
+
 If the light effect doesn't work, it may be that the current profile is not the set profile, or the brightness is set relatively low. You need to use the following command to increase the brightness.
+
 The "region" item in the read parameters can take the following values:
 
 - 0x00, which represents writing to all areas when writing
