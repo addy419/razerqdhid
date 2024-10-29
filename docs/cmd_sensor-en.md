@@ -104,36 +104,37 @@ Firstly, whether it is Razer calibration or self-calibration, an algorithm is in
 - `land = None` represents symmetry; setting `land` to a number represents asymmetry.
 
 ```python
+
 def calculate_lift_config(mouse_data, lift, land=None):
     if not (1 <= lift <= 10) or not (land is None or 1 <= land <= 10):
         raise ValueError('lift and land must be within 1 and 10')
     asym = land is not None
     def calc0(l, m0):
-        return round(m0 - (m0 - 8) / 10 * (l - 1))
+        return round(m0 - (m0 - 8) / 10 * (l-1))
     def calc2(l, m1, m3):
-        return (l - 1) * m3 + m1
+        return (l-1) * m3 + m1
     m0, m1, m2, m3 = mouse_data
-
+    
     a0 = calc0(lift, m0)
     if lift < 5: a1 = m2
-    else:        a1 = [0,0,0,0,0x30,0x30,0x38,0,38,0x38,0x38][lift - 1]
+    else:        a1 = [0,0,0,0,0x30,0x30,0x38,0x38,0x38,0x38][lift-1]
     a2 = calc2(lift, m1, m3)
     a3 = 0x88 if asym else 0x08
     a4 = max(10, a2)
-    if asym: a5 = [0x5,0xf,0xf,0xf,0xf,0xf,0x0,0x0,0x0,0x0][lift - 1]
-    else:    a5 = [0x5,0x5,0x5,0x5,0x5,0,0,0,0,0,0][lift - 1]
-    a6 = [0x10,0xf,0xf,0xf,0xf,0xf,0xf,0,e,0,e,0,e][lift]
-    a7 = [0xf,0,d,0,a,0,a,0,a,0,8,0,8,0,8][lift - 1]
+    if asym: a5 = [0x5,0xf,0xf,0xf,0xf,0xf,0x0,0x0,0x0,0x0][lift-1]
+    else:    a5 = [0x5,0x5,0x5,0x5,0x5,0x5,0x0,0x0,0x0,0x0][lift-1]
+    a6 = [0x10,0xf,0xf,0xf,0xf,0xf,0xf,0xe,0xe,0xe,0xe][lift]
+    a7 = [0xf,0xd,0xa,0xa,0xa,0x8,0x8,0x8,0x8,0x8][lift-1]
     a = bytes([a0, a1, a2, a3, a4, a5, a6, a7])
     if not asym:
         return a
-
+    
     b0 = calc0(land, m0)
     if lift < 5: b1 = m2
-    else:        b1 = [0,0,0,0,0x30,0,38,0,38,0,38,0,38][land - 1]
+    else:        b1 = [0,0,0,0,0x30,0x30,0x38,0x38,0x38,0x38][land-1]
     b2 = calc2(land, m1, m3)
     b3 = max(10, b2)
-    b4 = [0,f,0,d,0,a,0,a,0,a,0,8,0,8,0,8][land - 1]
+    b4 = [0xf,0xd,0xa,0xa,0xa,0x8,0x8,0x8,0x8,0x8][land-1]
     b = bytes([b0, b1, b2, b3, b4])
     return a, b
 

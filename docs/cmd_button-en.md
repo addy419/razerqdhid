@@ -227,7 +227,7 @@ The second data format is:
 
 ### Hypershift Switching
 
-The Hypershift switching button. When held, it enters the Hypershift mode. The data has only one fixed byte, which is 0x03, and its meaning is unknown.
+The Hypershift switching button. When held, it enters the Hypershift mode. The data has only one fixed byte, which is 0x01, and its meaning is unknown.
 
 ### Scroll Wheel Mode Switching
 
@@ -237,9 +237,16 @@ The Scroll Wheel Mode Switching button. When pressed, the scroll wheel switches 
 
 Because this command is rather complex, several examples are given here.
 Bind the left scroll wheel (not hypershift) in the white profile to copy, and the right scroll wheel to paste:
+
 01 34 00 02 02 01 06 00 00 00
+
 01 35 00 02 02 01 19 00 00 00
+
 Bind the left button in hypershift to the right button:
+
 01 01 01 01 01 02 00 00 00 00
+
 Temporary binding (direct profile), the left scroll wheel continuously triggers the scroll wheel up when pressed, 10 times per second:
+
 00 34 00 0e 03 09 00 64 00 00
+
