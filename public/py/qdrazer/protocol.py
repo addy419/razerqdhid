@@ -431,8 +431,8 @@ class ButtonFunction(ctypes.Structure):
 
 @dataclass
 class MacroOp:
-    op_type: MacroOpClass = field(default=MacroOpClass.NOOP)
-    op_value: bytes = field(default=b'')
+    op_type: MacroOpClass = field(default=MacroOpClass.DELAY_1)
+    op_value: bytes = field(default=b'\x01')
     
     MACRO_OP_VALUE_SIZE = {
         MacroOpClass.KEYBOARD_DOWN: 1,
